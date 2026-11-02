@@ -10,6 +10,7 @@ import streamlit as st
 from catboost import CatBoostRegressor
 from PIL import Image
 
+# --- LOGIC ICON FRIEREN (Buat tab browser) ---
 try:
     icon_img = Image.open("frieren icon.jfif") 
 except Exception:
@@ -22,6 +23,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# Bespoke Meteorological Chart Styling (Warm Cream & Sky Blue Theme)
 plt.rcParams.update({
     "figure.facecolor": "#FCFBF7",
     "axes.facecolor": "#FCFBF7",
@@ -58,32 +60,24 @@ st.markdown("""
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     
-    /* Hanya sembunyikan header utama Streamlit (tempat menu deploy) */
-    /* Kalender aman karena kita spesifik pakai data-testid */
+    /* FIX SIDEBAR: Jangan hide header, transparankan saja agar tombol (>>) tidak hilang */
     header[data-testid="stHeader"] {
-        visibility: hidden;
-    }
-    
-    /* Paksa tombol buka-tutup sidebar tetap muncul dan bisa diklik */
-    [data-testid="stSidebarCollapsedControl"],
-    [data-testid="stSidebarCollapsedControl"] * {
+        background-color: transparent !important;
         visibility: visible !important;
-        display: flex !important;
-        z-index: 999999 !important;
     }
     
-    /* Styling tombol sidebar agar sesuai tema cream */
-    [data-testid="stSidebarCollapsedControl"] button,
-    button[data-testid="stSidebarCollapsedControl"] {
+    /* Sembunyikan toolbar kanan (Deploy, Settings) agar bersih */
+    [data-testid="stToolbar"] {
+        visibility: hidden !important;
+    }
+    
+    /* Styling tombol buka sidebar agar sesuai tema cream */
+    [data-testid="stSidebarCollapsedControl"] button {
         background-color: #EFECE1 !important;
         border: 1px solid #D5D0C1 !important;
         border-radius: 4px !important;
-    }
-    
-    /* Pastikan ikon panahnya berwarna gelap */
-    [data-testid="stSidebarCollapsedControl"] svg {
-        fill: #182633 !important;
         color: #182633 !important;
+        box-shadow: 1px 1px 5px rgba(0,0,0,0.1) !important;
     }
 
     .block-container {
