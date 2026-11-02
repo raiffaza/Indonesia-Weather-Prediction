@@ -221,6 +221,7 @@ def load_ml_assets():
 @st.cache_data(show_spinner="Loading historical climate profiles...")
 def load_historical_proxy():
     csv_candidates = [
+        os.path.join(BASE_DIR, "idn_weather_daily.csv.gz"),
         os.path.join(BASE_DIR, "idn_weather_daily.csv"),
         "idn_weather_daily.csv",
         r"G:\Data Analyst\Indonesia Weather\idn_weather_daily.csv"
