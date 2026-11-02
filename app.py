@@ -62,8 +62,10 @@ st.markdown("""
     footer {visibility: hidden;}
     
     /* JANGAN SEMBUNYIKAN HEADER! Cukup buat transparan agar tombol (>>) tetap ada */
-    header[data-testid="stHeader"] {
+        header[data-testid="stHeader"] {
         background-color: transparent !important;
+        visibility: visible !important;
+        z-index: 99999 !important;
     }
     
     /* Sembunyikan toolbar kanan (Deploy, Settings) */
@@ -71,8 +73,15 @@ st.markdown("""
         visibility: hidden !important;
     }
 
-    /* Styling tombol buka sidebar (>>) agar sesuai tema cream */
-    [data-testid="stSidebarCollapsedControl"] button {
+    /* FIX: Paksa tombol toggle (>>) sidebar agar selalu berada di paling atas */
+    [data-testid="collapsedControl"] {
+        display: flex !important;
+        visibility: visible !important;
+        z-index: 999999 !important;
+    }
+
+    /* Styling tombol buka sidebar agar sesuai tema cream */
+    [data-testid="collapsedControl"] button {
         background-color: #EFECE1 !important;
         border: 1px solid #D5D0C1 !important;
         border-radius: 4px !important;
