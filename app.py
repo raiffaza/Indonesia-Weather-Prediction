@@ -9,9 +9,8 @@ import seaborn as sns
 import streamlit as st
 from catboost import CatBoostRegressor
 from PIL import Image
-import streamlit.components.v1 as components
 
-
+# --- LOGIC ICON FRIEREN (Buat tab browser) ---
 try:
     icon_img = Image.open("frieren icon.jfif") 
 except Exception:
@@ -61,11 +60,9 @@ st.markdown("""
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     
-    /* JANGAN SEMBUNYIKAN HEADER! Cukup buat transparan agar tombol (>>) tetap ada */
-        header[data-testid="stHeader"] {
+    /* Biarkan header Streamlit hidup, jangan diapa-apain */
+    header[data-testid="stHeader"] {
         background-color: transparent !important;
-        visibility: visible !important;
-        z-index: 99999 !important;
     }
     
     /* Sembunyikan toolbar kanan (Deploy, Settings) */
@@ -73,20 +70,24 @@ st.markdown("""
         visibility: hidden !important;
     }
 
-    /* FIX: Paksa tombol toggle (>>) sidebar agar selalu berada di paling atas */
-    [data-testid="collapsedControl"] {
+    /* --- CSS SAKTI: PAKSA TOMBOL BUKA SIDEBAR SELALU MUNCUL DI POJOK KIRI ATAS --- */
+    [data-testid="stSidebarCollapsedControl"] {
         display: flex !important;
         visibility: visible !important;
-        z-index: 999999 !important;
+        opacity: 1 !important;
+        z-index: 9999999 !important;
+        position: fixed !important;
+        top: 15px !important;
+        left: 15px !important;
     }
-
-    /* Styling tombol buka sidebar agar sesuai tema cream */
-    [data-testid="collapsedControl"] button {
+    
+    /* Styling tombolnya agar sesuai tema cream */
+    [data-testid="stSidebarCollapsedControl"] button {
         background-color: #EFECE1 !important;
         border: 1px solid #D5D0C1 !important;
         border-radius: 4px !important;
         color: #182633 !important;
-        box-shadow: 1px 1px 5px rgba(0,0,0,0.1) !important;
+        box-shadow: 2px 2px 8px rgba(0,0,0,0.15) !important;
     }
 
     .block-container {
@@ -1537,63 +1538,3 @@ elif nav_menu == "Methodology & Specs":
 )""",
             language="python"
         )
-
-# --- SCRIPT FIX UNTUK MEMAKSA TOMBOL SIDEBAR MUNCUL ---
-components.html(
-    """
-    <script>
-    const doc = window.parent.document;
-    
-    // Pantau terus apakah tombol (>>) hilang saat sidebar ditutup
-    setInterval(() => {
-        const sidebar = doc.querySelector('[data-testid="stSidebar"]');
-        const toggleBtn = doc.querySelector('[data-testid="stSidebarCollapsedControl"]');
-        
-        if (sidebar && sidebar.getAttribute('aria-expanded') === 'false') {
-            // Jika sidebar ketutup tapi tombol hilang
-            if (!toggleBtn) {
-                // Buat tombol darurat secara manual
-                if (!doc.getElementById('emergency-toggle')) {
-                    const btn = doc.createElement('button');
-                    btn.id = 'emergency-toggle';
-                    btn.innerHTML = '☰ Buka Menu';
-                    btn.style.position = 'fixed';
-                    btn.style.top = '15px';
-                    btn.style.left = '15px';
-                    btn.style.zIndex = '9999999';
-                    btn.style.padding = '8px 12px';
-                    btn.style.backgroundColor = '#EFECE1';
-                    btn.style.border = '1px solid #D5D0C1';
-                    btn.style.borderRadius = '4px';
-                    btn.style.cursor = 'pointer';
-                    btn.style.fontFamily = 'Plus Jakarta Sans, sans-serif';
-                    btn.style.fontSize = '14px';
-                    btn.style.color = '#182633';
-                    btn.style.boxShadow = '1px 1px 5px rgba(0,0,0,0.1)';
-                    
-                    btn.onclick = function() {
-                        // Klik tombol asli Streamlit secara tersembunyi jika ada
-                        const realBtn = doc.querySelector('button[kind="header"]');
-                        if (realBtn) {
-                            realBtn.click();
-                        } else {
-                            // Jika benar-benar tidak ada, buka paksa sidebarnya via manipulasi style
-                            if (sidebar) sidebar.style.display = 'block';
-                        }
-                    };
-                    doc.body.appendChild(btn);
-                }
-            } else {
-                // Jika tombol bawaan muncul, hapus tombol darurat
-                const emergencyBtn = doc.getElementById('emergency-toggle');
-                if (emergencyBtn) emergencyBtn.remove();
-                // Pastikan tombol bawaan benar-benar terlihat
-                toggleBtn.style.visibility = 'visible';
-                toggleBtn.style.display = 'block';
-            }
-        }
-    }, 500);
-    </script>
-    """,
-    height=0,
-)
