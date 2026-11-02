@@ -59,58 +59,33 @@ st.markdown("""
     /* Hide Default Streamlit Chrome */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
-    
-    /* --- CSS SAKTI FINAL: ANTI HILANG --- */
-    
-    /* 1. Pastikan header berada di layer paling atas dan background transparan */
-    header[data-testid="stHeader"] {
-        background-color: transparent !important;
-        z-index: 999999 !important;
-    }
+    header[data-testid="stHeader"] {visibility: hidden;}
 
-    /* 2. MATIKAN EFEK AUTO-HIDE STREAMLIT! Paksa isi header selalu terlihat 100% */
-    header[data-testid="stHeader"] > div {
-        opacity: 1 !important;
-        visibility: visible !important;
-    }
-
-    /* 3. Sembunyikan menu kanan (deploy/settings) secara permanen dari layout */
-    [data-testid="stToolbar"] {
+    /* --- CSS SAKTI: PAKSA SIDEBAR TERBUKA & HILANGKAN SEMUA TOMBOL TUTUP --- */
+    
+    /* 1. Sembunyikan tombol tutup di dalam sidebar */
+    [data-testid="stSidebarCollapseButton"] {
         display: none !important;
     }
-
-    /* 4. Target semua versi Streamlit (baru & lama). 
-       TIDAK PAKAI position: absolute agar tidak terlempar ke luar layar */
-    [data-testid="collapsedControl"],
+    
+    /* 2. Sembunyikan tombol buka melayang (kalau-kalau nyangkut) */
     [data-testid="stSidebarCollapsedControl"] {
-        display: flex !important;
+        display: none !important;
+    }
+    
+    /* 3. Paksa sidebar selalu nampil dan tidak bisa digeser */
+    section[data-testid="stSidebar"] {
+        display: block !important;
         visibility: visible !important;
-        opacity: 1 !important;
-        z-index: 9999999 !important;
+        transform: translateX(0px) !important;
+        min-width: 300px !important;
+        width: 300px !important;
+        margin-left: 0px !important;
     }
-
-    /* 5. Styling bentuk tombol agar sesuai tema cream kamu */
-    [data-testid="collapsedControl"] button,
-    [data-testid="stSidebarCollapsedControl"] button {
-        background-color: #EFECE1 !important;
-        border: 1px solid #D5D0C1 !important;
-        border-radius: 4px !important;
-        box-shadow: 2px 2px 8px rgba(0,0,0,0.15) !important;
-        transition: all 0.2s ease !important;
-    }
-
-    /* Efek hover pada tombol */
-    [data-testid="collapsedControl"] button:hover,
-    [data-testid="stSidebarCollapsedControl"] button:hover {
-        background-color: #E5E1D4 !important;
-    }
-
-    /* 6. Paksa warna ikon panah (SVG) jadi gelap pekat agar kontras */
-    [data-testid="collapsedControl"] svg,
-    [data-testid="stSidebarCollapsedControl"] svg {
-        fill: #182633 !important;
-        color: #182633 !important;
-        stroke: #182633 !important;
+    
+    /* 4. Paksa konten utama geser ke kanan biar nggak ketutupan */
+    section[data-testid="stMain"] {
+        margin-left: 300px !important;
     }
 
     .block-container {
