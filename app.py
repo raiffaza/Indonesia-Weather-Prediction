@@ -60,39 +60,57 @@ st.markdown("""
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     
-    /* Sembunyikan toolbar kanan & bikin header transparan, TAPI JANGAN HIDE */
+    /* --- CSS SAKTI FINAL: ANTI HILANG --- */
+    
+    /* 1. Pastikan header berada di layer paling atas dan background transparan */
     header[data-testid="stHeader"] {
         background-color: transparent !important;
-    }
-    
-    [data-testid="stToolbar"] {
-        visibility: hidden !important;
+        z-index: 999999 !important;
     }
 
-    /* --- CSS SAKTI: UBAH TOMBOL STREAMLIT JADI FLOATING BUTTON --- */
-    /* Ini akan memaksa tombol buka sidebar (>) selalu melayang di kiri atas */
+    /* 2. MATIKAN EFEK AUTO-HIDE STREAMLIT! Paksa isi header selalu terlihat 100% */
+    header[data-testid="stHeader"] > div {
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    /* 3. Sembunyikan menu kanan (deploy/settings) secara permanen dari layout */
+    [data-testid="stToolbar"] {
+        display: none !important;
+    }
+
+    /* 4. Target semua versi Streamlit (baru & lama). 
+       TIDAK PAKAI position: absolute agar tidak terlempar ke luar layar */
+    [data-testid="collapsedControl"],
     [data-testid="stSidebarCollapsedControl"] {
         display: flex !important;
         visibility: visible !important;
         opacity: 1 !important;
         z-index: 9999999 !important;
-        position: fixed !important;
-        top: 20px !important;
-        left: 20px !important;
     }
-    
-    /* Styling bentuk tombolnya biar cakep (bulat ala FAB) */
+
+    /* 5. Styling bentuk tombol agar sesuai tema cream kamu */
+    [data-testid="collapsedControl"] button,
     [data-testid="stSidebarCollapsedControl"] button {
         background-color: #EFECE1 !important;
         border: 1px solid #D5D0C1 !important;
-        border-radius: 50% !important;
-        box-shadow: 2px 2px 10px rgba(0,0,0,0.15) !important;
+        border-radius: 4px !important;
+        box-shadow: 2px 2px 8px rgba(0,0,0,0.15) !important;
+        transition: all 0.2s ease !important;
+    }
+
+    /* Efek hover pada tombol */
+    [data-testid="collapsedControl"] button:hover,
+    [data-testid="stSidebarCollapsedControl"] button:hover {
+        background-color: #E5E1D4 !important;
+    }
+
+    /* 6. Paksa warna ikon panah (SVG) jadi gelap pekat agar kontras */
+    [data-testid="collapsedControl"] svg,
+    [data-testid="stSidebarCollapsedControl"] svg {
+        fill: #182633 !important;
         color: #182633 !important;
-        width: 40px !important;
-        height: 40px !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
+        stroke: #182633 !important;
     }
 
     .block-container {
@@ -364,7 +382,6 @@ st.markdown("""
     }
 </style>
 """, unsafe_allow_html=True)
-
 
 LOCATION_CATALOG = [
     {"city": "Banda Aceh", "province": "Aceh", "island": "Sumatra", "base_temp": 27.1, "rad": 19.2, "precip": 5.4, "phours": 6.5, "ws": 12.5, "wg": 28.0, "wcode": 51.0},
