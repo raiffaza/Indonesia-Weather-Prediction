@@ -59,7 +59,7 @@ st.markdown("""
     /* Hide Default Streamlit Chrome */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
-    header {visibility: hidden;}
+    header[data-testid="stHeader"] {visibility: hidden;}
 
     .block-container {
         padding-top: 1.75rem;
