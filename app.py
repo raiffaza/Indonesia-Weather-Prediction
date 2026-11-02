@@ -124,6 +124,12 @@ st.markdown("""
     }
 
     /* Inputs & Dropdowns: Crisp Cream Paper & Sky Blue Focus */
+    div[data-baseweb="select"] * {
+        color: #182633 !important;
+    }
+    .st-emotion-cache-1wmy9hl, .st-emotion-cache-1wmy9hl p {
+        color: #182633 !important;
+    }
     div[data-baseweb="select"] > div,
     div[data-baseweb="input"] > div,
     div[data-testid="stDateInput"] > div > div {
