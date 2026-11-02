@@ -40,5 +40,5 @@ Tree-based models (like CatBoost) are excellent at learning seasonal patterns bu
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/yourusername/bmkg-climate-ai.git
-   cd bmkg-climate-ai
+   git clone https://github.com/raiffaza/Indonesia-Weather-Prediction.git
+   cd Indonesia-Weather-Prediction
