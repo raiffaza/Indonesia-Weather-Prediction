@@ -18,119 +18,232 @@ st.set_page_config(
 
 st.markdown("""
 <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+    /* Base Cream Background */
+    .stApp {
+        background-color: #FDFBF7; 
+    }
+
+    html, body, [class*="css"] {
+        font-family: 'Inter', sans-serif;
+        color: #1E293B;
+    }
+
+    /* Hide Streamlit Clutter */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+
+    /* Container */
     .block-container {
-        padding-top: 1.5rem;
-        padding-bottom: 2.5rem;
-        max-width: 1440px;
+        padding-top: 2rem;
+        padding-bottom: 3rem;
+        max-width: 1400px;
     }
+
+    /* Sidebar */
+    section[data-testid="stSidebar"] {
+        background-color: #FFFFFF;
+        border-right: 1px solid #E2E8F0;
+    }
+    
+    section[data-testid="stSidebar"] .block-container {
+        padding-top: 2rem;
+    }
+
+    /* Sidebar Radio as Navigation Pills */
+    div[data-testid="stRadio"] > div {
+        gap: 0.5rem;
+    }
+    
+    div[data-testid="stRadio"] label {
+        background-color: #F8FAFC;
+        padding: 0.75rem 1rem;
+        border-radius: 12px;
+        border: 1px solid #E2E8F0;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+    
+    div[data-testid="stRadio"] label:hover {
+        background-color: #F1F5F9;
+        border-color: #CBD5E1;
+    }
+    
+    div[data-testid="stRadio"] label[data-checked="true"] {
+        background-color: #E0F2FE;
+        border-color: #7DD3FC;
+        color: #0369A1;
+        font-weight: 600;
+    }
+
+    /* Hero Card (Light Blue Gradient) */
     .hero-card {
-        background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 60%, #0284c7 100%);
-        color: #ffffff;
-        padding: 2rem 2.2rem;
-        border-radius: 16px;
-        box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.25);
-        margin-bottom: 1.5rem;
-        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: linear-gradient(135deg, #E0F2FE 0%, #F0F9FF 100%);
+        color: #0F172A;
+        padding: 3rem 2.5rem;
+        border-radius: 24px;
+        box-shadow: 0 10px 30px -10px rgba(14, 165, 233, 0.15);
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid #BAE6FD;
     }
+    
     .hero-badge {
         display: inline-block;
-        background: rgba(56, 189, 248, 0.2);
-        color: #7dd3fc;
-        border: 1px solid rgba(125, 211, 252, 0.4);
-        padding: 0.25rem 0.85rem;
+        background: #FFFFFF;
+        color: #0284C7;
+        border: 1px solid #BAE6FD;
+        padding: 0.35rem 1rem;
         border-radius: 999px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        letter-spacing: 0.5px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 1px;
         text-transform: uppercase;
-        margin-bottom: 0.75rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
     }
+
     .hero-title {
-        font-size: 2.1rem;
+        font-size: 2.5rem;
         font-weight: 800;
-        margin: 0 0 0.5rem 0;
+        margin: 0 0 1rem 0;
         line-height: 1.2;
-        color: #ffffff;
+        color: #0F172A;
+        letter-spacing: -0.02em;
     }
+
     .hero-subtitle {
-        font-size: 1rem;
-        color: #e2e8f0;
+        font-size: 1.1rem;
+        color: #334155;
         margin: 0;
         line-height: 1.6;
-        max-width: 950px;
+        max-width: 800px;
+        font-weight: 400;
     }
+
+    /* KPI Cards */
     .kpi-card {
-        background: #ffffff;
-        border-radius: 14px;
-        padding: 1.25rem 1.4rem;
-        border: 1px solid #e2e8f0;
-        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
-        transition: transform 0.15s ease, box-shadow 0.15s ease;
+        background: #FFFFFF;
+        border-radius: 16px;
+        padding: 1.5rem;
+        border: 1px solid #E2E8F0;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03), 0 2px 4px -2px rgba(0, 0, 0, 0.03);
+        transition: all 0.3s ease;
         height: 100%;
     }
+
     .kpi-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+        transform: translateY(-4px);
+        box-shadow: 0 12px 20px -8px rgba(14, 165, 233, 0.15);
+        border-color: #BAE6FD;
     }
+
     .kpi-label {
-        font-size: 0.82rem;
-        font-weight: 600;
-        color: #64748b;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #64748B;
         text-transform: uppercase;
-        letter-spacing: 0.4px;
-        margin-bottom: 0.35rem;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.5rem;
     }
+
     .kpi-value {
-        font-size: 1.85rem;
+        font-size: 2rem;
         font-weight: 800;
-        color: #0f172a;
-        margin-bottom: 0.25rem;
+        color: #0F172A;
+        margin-bottom: 0.5rem;
+        letter-spacing: -0.02em;
     }
+
     .kpi-delta-pos {
-        font-size: 0.85rem;
+        font-size: 0.8rem;
         font-weight: 600;
-        color: #dc2626;
-        background: #fef2f2;
-        padding: 0.15rem 0.55rem;
-        border-radius: 6px;
+        color: #DC2626;
+        background: #FEF2F2;
+        padding: 0.25rem 0.6rem;
+        border-radius: 8px;
         display: inline-block;
     }
+
     .kpi-delta-neg {
-        font-size: 0.85rem;
+        font-size: 0.8rem;
         font-weight: 600;
-        color: #2563eb;
-        background: #eff6ff;
-        padding: 0.15rem 0.55rem;
-        border-radius: 6px;
+        color: #0284C7;
+        background: #F0F9FF;
+        padding: 0.25rem 0.6rem;
+        border-radius: 8px;
         display: inline-block;
     }
+
     .kpi-delta-neutral {
-        font-size: 0.85rem;
+        font-size: 0.8rem;
         font-weight: 600;
         color: #475569;
-        background: #f1f5f9;
-        padding: 0.15rem 0.55rem;
-        border-radius: 6px;
+        background: #F8FAFC;
+        padding: 0.25rem 0.6rem;
+        border-radius: 8px;
         display: inline-block;
+        border: 1px solid #E2E8F0;
     }
+
+    /* Section Cards */
     .section-card {
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
-        border-left: 5px solid #0284c7;
-        padding: 1.15rem 1.4rem;
-        border-radius: 10px;
-        margin-bottom: 1.25rem;
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.02);
+        border-left: 4px solid #38BDF8;
     }
+
     .section-card h4 {
-        margin: 0 0 0.4rem 0;
-        color: #0f172a;
-        font-size: 1.05rem;
+        margin: 0 0 0.75rem 0;
+        color: #0F172A;
+        font-size: 1.1rem;
+        font-weight: 700;
     }
+
     .section-card p {
         margin: 0;
-        color: #334155;
-        font-size: 0.92rem;
-        line-height: 1.55;
+        color: #475569;
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+
+    /* Buttons */
+    div.stButton > button:first-child {
+        background: #0EA5E9;
+        color: white;
+        border-radius: 8px;
+        border: none;
+        padding: 0.5rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 6px -1px rgba(14, 165, 233, 0.2);
+    }
+
+    div.stButton > button:first-child:hover {
+        background: #0284C7;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 8px -1px rgba(14, 165, 233, 0.3);
+        color: white;
+    }
+
+    /* Expander */
+    div[data-testid="stExpander"] {
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        box-shadow: none;
+        background-color: #FFFFFF;
+    }
+    
+    div[data-testid="stExpander"] summary {
+        font-weight: 600;
+        color: #0F172A;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -587,8 +700,8 @@ def render_signature_linechart(
     return fig, plot_data, summary_info
 
 with st.sidebar:
-    st.markdown("## 🧭 Control Panel & Options")
-    st.caption("Configure region and forecast time range for daily average temperature.")
+    st.markdown("## 🧭 Control Panel")
+    st.caption("Configure region and forecast time range.")
 
     nav_menu = st.radio(
         "Select Navigation Page:",
@@ -602,7 +715,7 @@ with st.sidebar:
     )
 
     st.markdown("---")
-    st.markdown("### 📍 1. Select Location (Cascading)")
+    st.markdown("### 📍 1. Select Location")
     st.caption("Select a **Province** first to filter the **City** options.")
 
     selected_province = st.selectbox(
@@ -639,7 +752,7 @@ with st.sidebar:
     )
 
     st.markdown("---")
-    st.markdown("### 🌡️ 2. Climate Scenario Modeling")
+    st.markdown("### 🌡️ 2. Climate Scenario")
     scenario_mode = st.selectbox(
         "Select Climate Scenario:",
         options=[
@@ -652,7 +765,7 @@ with st.sidebar:
     )
 
     st.markdown("---")
-    st.markdown("### ⏱️ 3. Forecast Horizon Mode")
+    st.markdown("### ⏱️ 3. Forecast Mode")
     prediction_mode = st.selectbox(
         "Select Time Scale:",
         options=[
@@ -664,7 +777,7 @@ with st.sidebar:
     )
 
     st.markdown("---")
-    st.markdown("### 🎨 4. Chart Visualization Options")
+    st.markdown("### 🎨 4. Chart Options")
     grouping_mode = st.selectbox(
         "Entity Basis in Line Chart:",
         options=[
@@ -813,7 +926,7 @@ if nav_menu == "🏠 Introduction & System Architecture":
 elif nav_menu == "📈 Forecast Dashboard & Visualization":
     
     st.markdown("""
-    <div class="section-card" style="border-left-color: #f59e0b; background-color: #fffbeb;">
+    <div class="section-card" style="border-left-color: #F59E0B; background-color: #FFFBEB;">
         <h4>💡 How does the Hybrid Model work? (Why the lines look the way they do)</h4>
         <p>
             The forecast you see is not purely from the CatBoost Machine Learning model. It uses a <b>Hybrid Physics-Informed Architecture</b>:
