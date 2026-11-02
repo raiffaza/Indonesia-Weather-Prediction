@@ -10,7 +10,6 @@ import streamlit as st
 from catboost import CatBoostRegressor
 from PIL import Image
 
-# --- LOGIC ICON FRIEREN (Buat tab browser) ---
 try:
     icon_img = Image.open("frieren icon.jfif") 
 except Exception:
@@ -22,6 +21,21 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+if "sidebar_visible" not in st.session_state:
+    st.session_state.sidebar_visible = True
+
+if not st.session_state.sidebar_visible:
+    st.markdown(
+        """
+        <style>
+            /* Sembunyikan sidebar dan tombol bawaan streamlit secara paksa */
+            section[data-testid="stSidebar"] { display: none !important; }
+            [data-testid="stSidebarCollapsedControl"] { display: none !important; }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
 
 # Bespoke Meteorological Chart Styling (Warm Cream & Sky Blue Theme)
 plt.rcParams.update({
@@ -60,34 +74,29 @@ st.markdown("""
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     
-    /* Biarkan header Streamlit hidup, jangan diapa-apain */
     header[data-testid="stHeader"] {
         background-color: transparent !important;
     }
     
-    /* Sembunyikan toolbar kanan (Deploy, Settings) */
     [data-testid="stToolbar"] {
         visibility: hidden !important;
     }
 
-    /* --- CSS SAKTI: PAKSA TOMBOL BUKA SIDEBAR SELALU MUNCUL DI POJOK KIRI ATAS --- */
-    [data-testid="stSidebarCollapsedControl"] {
-        display: flex !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-        z-index: 9999999 !important;
-        position: fixed !important;
-        top: 15px !important;
-        left: 15px !important;
-    }
-    
-    /* Styling tombolnya agar sesuai tema cream */
-    [data-testid="stSidebarCollapsedControl"] button {
+    /* Styling Tombol Custom Sidebar */
+    div[data-testid="stButton"] > button {
         background-color: #EFECE1 !important;
+        color: #182633 !important;
         border: 1px solid #D5D0C1 !important;
         border-radius: 4px !important;
-        color: #182633 !important;
-        box-shadow: 2px 2px 8px rgba(0,0,0,0.15) !important;
+        font-family: 'JetBrains Mono', monospace !important;
+        font-weight: 600 !important;
+        font-size: 0.8rem !important;
+        transition: all 0.2s ease;
+    }
+    div[data-testid="stButton"] > button:hover {
+        background-color: #E5E1D4 !important;
+        border-color: #B3D1E7 !important;
+        color: #0F4469 !important;
     }
 
     .block-container {
@@ -359,6 +368,16 @@ st.markdown("""
     }
 </style>
 """, unsafe_allow_html=True)
+
+# --- TOMBOL CUSTOM UNTUK BUKA/TUTUP SIDEBAR ---
+# Kita taruh di atas sebelum konten utama
+col_toggle, _ = st.columns([1, 6])
+with col_toggle:
+    btn_label = "✖ Tutup Menu" if st.session_state.sidebar_visible else "☰ Buka Menu"
+    if st.button(btn_label, use_container_width=True):
+        st.session_state.sidebar_visible = not st.session_state.sidebar_visible
+        st.rerun()
+
 
 LOCATION_CATALOG = [
     {"city": "Banda Aceh", "province": "Aceh", "island": "Sumatra", "base_temp": 27.1, "rad": 19.2, "precip": 5.4, "phours": 6.5, "ws": 12.5, "wg": 28.0, "wcode": 51.0},
