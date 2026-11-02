@@ -8,245 +8,319 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import streamlit as st
 from catboost import CatBoostRegressor
+from PIL import Image
+
+# --- LOGIC ICON FRIEREN (Buat tab browser) ---
+try:
+    icon_img = Image.open("frieren icon.jfif") 
+except Exception:
+    icon_img = "🌤️" 
 
 st.set_page_config(
-    page_title="Indonesia Climate AI — Temperature Forecasting",
-    page_icon="🌤️",
+    page_title="IDN-CLIM // Surface Temperature Workbench",
+    page_icon=icon_img, 
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
+# Bespoke Meteorological Chart Styling (Warm Cream & Sky Blue Theme)
 plt.rcParams.update({
-    "figure.facecolor": "#FDFBF7",
-    "axes.facecolor": "#FFFFFF",
-    "text.color": "#1E293B",
-    "axes.labelcolor": "#1E293B",
-    "xtick.color": "#1E293B",
-    "ytick.color": "#1E293B",
-    "axes.edgecolor": "#E2E8F0",
-    "grid.color": "#E2E8F0"
+    "figure.facecolor": "#FCFBF7",
+    "axes.facecolor": "#FCFBF7",
+    "text.color": "#182633",
+    "axes.labelcolor": "#3A4D5E",
+    "xtick.color": "#52667A",
+    "ytick.color": "#52667A",
+    "axes.edgecolor": "#D5D0C1",
+    "grid.color": "#E6E2D6",
+    "font.sans-serif": ["Plus Jakarta Sans", "DejaVu Sans", "Arial"],
+    "axes.spines.top": False,
+    "axes.spines.right": False
 })
 
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
-    /* Force Light Mode & Cream Background */
+    /* Base Canvas: Warm Alabaster Cream */
     .stApp {
-        background-color: #FDFBF7 !important; 
+        background-color: #F7F4EB !important;
     }
 
     html, body, [class*="css"] {
-        font-family: 'Inter', sans-serif !important;
-        color: #1E293B !important;
+        font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
+        color: #182633 !important;
     }
 
-    /* Hide Streamlit Clutter */
+    code, pre, .mono-val {
+        font-family: 'JetBrains Mono', monospace !important;
+    }
+
+    /* Hide Default Streamlit Chrome */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
 
-    /* Main Container */
     .block-container {
-        padding-top: 2rem;
+        padding-top: 1.75rem;
         padding-bottom: 3rem;
-        max-width: 1400px;
+        max-width: 1420px;
     }
 
-    /* Sidebar Styling */
+    /* Sidebar: Warm Parchment Cream with Crisp Hairline */
     section[data-testid="stSidebar"] {
-        background-color: #FFFFFF !important;
-        border-right: 1px solid #E2E8F0;
-    }
-    
-    section[data-testid="stSidebar"] * {
-        color: #1E293B !important;
+        background-color: #EFECE1 !important;
+        border-right: 1px solid #D5D0C1 !important;
     }
 
-    /* Sidebar Radio as Navigation Pills */
-    div[data-testid="stRadio"] > div {
-        gap: 0.5rem;
+    section[data-testid="stSidebar"] * {
+        color: #182633 !important;
     }
-    
+
+    /* Sidebar Section Headers */
+    .sidebar-section-title {
+        font-family: 'JetBrains Mono', monospace !important;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: #4A6984 !important;
+        margin-top: 1.25rem;
+        margin-bottom: 0.5rem;
+        padding-bottom: 0.25rem;
+        border-bottom: 1px solid #D5D0C1;
+    }
+
+    /* Sidebar Navigation Radio -> Clean Tabular List (No AI Pill Slop) */
+    div[data-testid="stRadio"] > div {
+        gap: 0.25rem;
+    }
+
     div[data-testid="stRadio"] label {
-        background-color: #F8FAFC !important;
-        padding: 0.75rem 1rem !important;
-        border-radius: 10px !important;
-        border: 1px solid #E2E8F0 !important;
-        transition: all 0.2s ease;
+        background-color: transparent !important;
+        padding: 0.55rem 0.75rem !important;
+        border-radius: 4px !important;
+        border: 1px solid transparent !important;
+        transition: background-color 0.15s ease;
         cursor: pointer;
     }
-    
+
     div[data-testid="stRadio"] label:hover {
-        background-color: #F1F5F9 !important;
-        border-color: #CBD5E1 !important;
+        background-color: #E5E1D4 !important;
     }
-    
+
     div[data-testid="stRadio"] label[data-checked="true"] {
-        background-color: #E0F2FE !important;
-        border-color: #7DD3FC !important;
+        background-color: #DFEEF8 !important;
+        border: 1px solid #9BC2DF !important;
     }
 
     div[data-testid="stRadio"] label[data-checked="true"] p {
-        color: #0284C7 !important;
-        font-weight: 600 !important;
+        color: #0F4469 !important;
+        font-weight: 700 !important;
     }
 
-    /* Hide the default radio circle */
     div[data-testid="stRadio"] label > div:first-child {
         display: none !important;
     }
 
-    /* Fix Selectbox Dark Mode Issue */
-    div[data-baseweb="select"] > div {
-        background-color: #FFFFFF !important;
-        border: 1px solid #E2E8F0 !important;
-        color: #1E293B !important;
-        border-radius: 8px !important;
+    /* Inputs & Dropdowns: Crisp Cream Paper & Sky Blue Focus */
+    div[data-baseweb="select"] > div,
+    div[data-baseweb="input"] > div,
+    div[data-testid="stDateInput"] > div > div {
+        background-color: #FCFBF7 !important;
+        border: 1px solid #C9C3B2 !important;
+        color: #182633 !important;
+        border-radius: 4px !important;
+        box-shadow: none !important;
     }
+
     div[data-baseweb="select"] svg {
-        fill: #1E293B !important;
+        fill: #3A4D5E !important;
     }
+
     ul[role="listbox"] {
-        background-color: #FFFFFF !important;
+        background-color: #FCFBF7 !important;
+        border: 1px solid #C9C3B2 !important;
     }
+
     ul[role="listbox"] li {
-        color: #1E293B !important;
+        color: #182633 !important;
     }
+
     ul[role="listbox"] li:hover {
-        background-color: #F1F5F9 !important;
+        background-color: #E4F0F8 !important;
     }
 
-    /* Hero Card (Light Blue) */
-    .hero-card {
-        background: linear-gradient(135deg, #E0F2FE 0%, #F0F9FF 100%);
-        padding: 2.5rem;
-        border-radius: 20px;
-        box-shadow: 0 10px 30px -10px rgba(14, 165, 233, 0.15);
-        margin-bottom: 2rem;
-        border: 1px solid #BAE6FD;
+    /* Editorial Masthead Header (Replaces AI Gradient Hero Card) */
+    .masthead {
+        background-color: #E4F0F8;
+        border: 1px solid #B3D1E7;
+        border-top: 3px solid #1E5D88;
+        border-radius: 4px;
+        padding: 1.5rem 2rem;
+        margin-bottom: 1.75rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
     }
-    
-    .hero-badge {
-        display: inline-block;
-        background: #FFFFFF;
-        color: #0284C7;
-        border: 1px solid #BAE6FD;
-        padding: 0.35rem 1rem;
-        border-radius: 999px;
-        font-size: 0.75rem;
-        font-weight: 700;
-        letter-spacing: 1px;
+
+    .masthead-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #C5DDF0;
+        padding-bottom: 0.5rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .masthead-code {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: #1E5D88;
+        letter-spacing: 0.06em;
         text-transform: uppercase;
-        margin-bottom: 1rem;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
     }
 
-    .hero-title {
-        font-size: 2.2rem;
+    .masthead-title {
+        font-size: 1.75rem;
         font-weight: 800;
-        margin: 0 0 1rem 0;
-        line-height: 1.2;
-        color: #0F172A !important;
-        letter-spacing: -0.02em;
-    }
-
-    .hero-subtitle {
-        font-size: 1rem;
-        color: #334155 !important;
+        color: #0F293D !important;
         margin: 0;
-        line-height: 1.6;
-        max-width: 800px;
+        letter-spacing: -0.025em;
+        line-height: 1.2;
     }
 
-    /* KPI Cards */
+    .masthead-desc {
+        font-size: 0.92rem;
+        color: #2C465B !important;
+        margin: 0;
+        line-height: 1.55;
+        max-width: 960px;
+    }
+
+    /* Telemetry Readout Strip (KPIs without Bouncy Hover or Drop Shadows) */
     .kpi-card {
-        background: #FFFFFF;
-        border-radius: 14px;
-        padding: 1.5rem;
-        border: 1px solid #E2E8F0;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03);
-        transition: all 0.3s ease;
+        background: #FCFBF7;
+        border: 1px solid #D5D0C1;
+        border-top: 2px solid #7BAFD4;
+        border-radius: 4px;
+        padding: 1.1rem 1.25rem;
         height: 100%;
     }
 
-    .kpi-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 12px 20px -8px rgba(14, 165, 233, 0.15);
-        border-color: #BAE6FD;
-    }
-
     .kpi-label {
-        font-size: 0.75rem;
-        font-weight: 700;
-        color: #64748B !important;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: #5A6D7C !important;
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.4rem;
     }
 
     .kpi-value {
-        font-size: 1.8rem;
-        font-weight: 800;
-        color: #0F172A !important;
-        margin-bottom: 0.5rem;
-        letter-spacing: -0.02em;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 1.65rem;
+        font-weight: 700;
+        color: #0F293D !important;
+        margin-bottom: 0.4rem;
+        letter-spacing: -0.03em;
     }
 
     .kpi-delta-pos {
-        font-size: 0.8rem;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.73rem;
         font-weight: 600;
-        color: #DC2626 !important;
-        background: #FEF2F2;
-        padding: 0.25rem 0.6rem;
-        border-radius: 6px;
+        color: #9E2A2B !important;
+        background: #F9E6E6;
+        border: 1px solid #E5B7B7;
+        padding: 0.15rem 0.5rem;
+        border-radius: 3px;
         display: inline-block;
     }
 
     .kpi-delta-neg {
-        font-size: 0.8rem;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.73rem;
         font-weight: 600;
-        color: #0284C7 !important;
-        background: #F0F9FF;
-        padding: 0.25rem 0.6rem;
-        border-radius: 6px;
+        color: #165682 !important;
+        background: #E4F0F8;
+        border: 1px solid #B3D1E7;
+        padding: 0.15rem 0.5rem;
+        border-radius: 3px;
         display: inline-block;
     }
 
     .kpi-delta-neutral {
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: #475569 !important;
-        background: #F8FAFC;
-        padding: 0.25rem 0.6rem;
-        border-radius: 6px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.73rem;
+        font-weight: 500;
+        color: #3E5060 !important;
+        background: #EFECE1;
+        border: 1px solid #D5D0C1;
+        padding: 0.15rem 0.5rem;
+        border-radius: 3px;
         display: inline-block;
-        border: 1px solid #E2E8F0;
     }
 
-    /* Section Cards */
-    .section-card {
-        background: #FFFFFF;
-        border: 1px solid #E2E8F0;
-        border-radius: 14px;
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.02);
-        border-left: 4px solid #38BDF8;
+    /* Technical Panels (Replaces Left-Border AI Callouts) */
+    .tech-panel {
+        background: #FCFBF7;
+        border: 1px solid #D5D0C1;
+        border-radius: 4px;
+        padding: 1.25rem 1.4rem;
+        margin-bottom: 1.2rem;
     }
 
-    .section-card h4 {
-        margin: 0 0 0.75rem 0;
-        color: #0F172A !important;
-        font-size: 1.1rem;
+    .tech-panel-sky {
+        background: #EBF4FA;
+        border: 1px solid #B8D4E8;
+        border-radius: 4px;
+        padding: 1.1rem 1.35rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .tech-panel-header {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        color: #1E5D88 !important;
+        margin-bottom: 0.4rem;
+    }
+
+    .tech-panel h4 {
+        margin: 0 0 0.5rem 0;
+        color: #0F293D !important;
+        font-size: 1rem;
         font-weight: 700;
     }
 
-    .section-card p {
+    .tech-panel p, .tech-panel-sky p {
         margin: 0;
-        color: #475569 !important;
-        font-size: 0.95rem;
+        color: #2F4252 !important;
+        font-size: 0.9rem;
         line-height: 1.6;
+    }
+
+    /* Station Readout Box in Sidebar */
+    .station-box {
+        background-color: #FCFBF7;
+        border: 1px solid #C9C3B2;
+        border-radius: 4px;
+        padding: 0.75rem 0.9rem;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.76rem;
+        line-height: 1.6;
+        margin-top: 0.5rem;
+    }
+
+    /* Subheaders */
+    h2, h3, h4 {
+        letter-spacing: -0.015em;
+        color: #0F293D !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -288,7 +362,7 @@ LOCATION_CATALOG = [
 CATALOG_DF = pd.DataFrame(LOCATION_CATALOG)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__)) if "__file__" in locals() else os.getcwd()
 
-@st.cache_resource(show_spinner="Loading CatBoost model & Location Encoder...")
+@st.cache_resource(show_spinner="Initializing CatBoost model & spatial encoder...")
 def load_ml_assets():
     model_candidates = [
         os.path.join(BASE_DIR, "catboost_temperature_model.cbm"),
@@ -302,7 +376,7 @@ def load_ml_assets():
     ]
 
     loaded_model = None
-    model_status = "Climatology Simulation Mode (Missing .cbm file)"
+    model_status = "SYNTHETIC CLIMATOLOGY (Missing .cbm)"
     for m_path in model_candidates:
         if os.path.exists(m_path):
             try:
@@ -310,14 +384,14 @@ def load_ml_assets():
                 with open(m_path, "rb") as f:
                     cb.load_model(blob=f.read())
                 loaded_model = cb
-                model_status = f"CatBoost Champion Model Active ({os.path.basename(m_path)})"
+                model_status = f"CATBOOST ACTIVE ({os.path.basename(m_path)})"
                 break
             except Exception:
                 try:
                     cb = CatBoostRegressor()
                     cb.load_model(m_path)
                     loaded_model = cb
-                    model_status = f"CatBoost Champion Model Active ({os.path.basename(m_path)})"
+                    model_status = f"CATBOOST ACTIVE ({os.path.basename(m_path)})"
                     break
                 except Exception:
                     pass
@@ -334,7 +408,7 @@ def load_ml_assets():
 
     return loaded_model, loaded_encoder, model_status
 
-@st.cache_data(show_spinner="Loading historical climate profiles...")
+@st.cache_data(show_spinner="Loading historical climatology baselines...")
 def load_historical_proxy():
     csv_candidates = [
         os.path.join(BASE_DIR, "idn_weather_daily.csv.gz"),
@@ -521,7 +595,8 @@ def render_signature_linechart(
     median_entity = entity_means.index[len(entity_means) // 2]
 
     base_selected = top_2 + bottom_2 + [median_entity]
-    base_colors = ["#d62728", "#ff7f0e", "#08306b", "#6baed6", "#7f7f7f"]
+    # Refined Meteorological Palette (Warm Terracotta/Amber for Heat, Cerulean/Sky for Cold, Slate for Median)
+    base_colors = ["#B8332A", "#D97724", "#165682", "#5DA2D5", "#7C8B99"]
     entity_colors = dict(zip(base_selected, base_colors))
 
     user_in_benchmark = user_target in base_selected
@@ -529,9 +604,9 @@ def render_signature_linechart(
 
     if not user_in_benchmark and user_target in entity_means.index:
         selected_entities.append(user_target)
-        entity_colors[user_target] = "#16a34a"
+        entity_colors[user_target] = "#2B7A57"
 
-    national_color = "black"
+    national_color = "#182633"
     labels = {}
     total_entities = len(entity_means)
 
@@ -542,28 +617,28 @@ def render_signature_linechart(
         rank_num = int(entity_means.index.get_loc(ent)) + 1
 
         if ent in top_2:
-            prefix = f"[Top {top_2.index(ent) + 1} Hottest]"
+            prefix = f"[MAX #{top_2.index(ent) + 1}]"
         elif ent in bottom_2:
-            prefix = f"[Top {bottom_2.index(ent) + 1} Coldest]"
+            prefix = f"[MIN #{bottom_2.index(ent) + 1}]"
         elif ent == median_entity:
-            prefix = "[Median]"
+            prefix = "[MEDIAN]"
         else:
-            prefix = f"[Your Selection • Rank #{rank_num}/{total_entities}]"
+            prefix = f"[SELECTED • #{rank_num}/{total_entities}]"
 
-        user_tag = " ★ (Your Selection)" if (ent == user_target and user_in_benchmark) else ""
-        labels[ent] = f"{prefix} {ent}{user_tag} | Avg: {avg_temp:.1f}°C ({diff_str})"
+        user_tag = " (Active)" if (ent == user_target and user_in_benchmark) else ""
+        labels[ent] = f"{prefix} {ent}{user_tag} — {avg_temp:.1f}°C ({diff_str})"
 
     plot_data = period_means_all.loc[selected_entities].T
     x_indices = list(range(1, len(x_labels) + 1))
     plot_data.index = x_indices
     period_national.index = x_indices
 
-    fig, ax = plt.subplots(figsize=(16, 9), dpi=130)
+    fig, ax = plt.subplots(figsize=(15.5, 8.2), dpi=130)
 
     for ent in selected_entities:
         is_user_line = (ent == user_target)
-        lw = 3.2 if is_user_line else 2.2
-        ms = 8 if is_user_line else 6
+        lw = 2.8 if is_user_line else 2.0
+        ms = 6.5 if is_user_line else 5.0
         z_ord = 6 if is_user_line else 4
         ax.plot(
             plot_data.index,
@@ -581,18 +656,18 @@ def render_signature_linechart(
         period_national.values,
         color=national_color,
         linestyle="--",
-        linewidth=2.0,
-        alpha=0.85,
-        label=f"[National Average] | Avg: {national_mean:.1f}°C",
+        linewidth=1.6,
+        alpha=0.8,
+        label=f"[NATIONAL MEAN] — {national_mean:.1f}°C",
         zorder=3
     )
 
     if show_annotations:
         n_lines = len(selected_entities) + 1
         if n_lines <= 6:
-            y_offsets = [36, 18, 0, -18, -36, -54]
+            y_offsets = [34, 17, 0, -17, -34, -51]
         else:
-            y_offsets = [45, 28, 11, -6, -23, -40, -57]
+            y_offsets = [42, 26, 10, -6, -22, -38, -54]
 
         step = 1 if len(x_indices) <= 16 else (2 if len(x_indices) <= 24 else 3)
 
@@ -603,15 +678,15 @@ def render_signature_linechart(
             for ent in selected_entities:
                 val = plot_data.loc[x_idx, ent]
                 diff = val - nat_val
-                text = f"{val:.1f}°C\n({diff:+.1f}°C)"
+                text = f"{val:.1f}°C ({diff:+.1f})"
                 tick_points.append({"val": val, "text": text, "color": entity_colors[ent]})
 
             tick_points.append({"val": nat_val, "text": f"{nat_val:.1f}°C", "color": national_color})
             tick_points.sort(key=lambda item: item["val"], reverse=True)
 
             for i, point in enumerate(tick_points):
-                text_color = "white" if point["color"] in ["#d62728", "#08306b", "black", "#16a34a"] else "black"
-                offset_y = y_offsets[i] if i < len(y_offsets) else -65
+                text_color = "#FCFBF7" if point["color"] in ["#B8332A", "#165682", "#182633", "#2B7A57"] else "#182633"
+                offset_y = y_offsets[i] if i < len(y_offsets) else -62
 
                 ax.annotate(
                     point["text"],
@@ -620,20 +695,20 @@ def render_signature_linechart(
                     xytext=(0, offset_y),
                     ha="center",
                     va="center",
-                    fontsize=7.8,
-                    fontweight="bold",
+                    fontsize=7.5,
+                    fontweight="600",
                     color=text_color,
                     bbox=dict(
-                        boxstyle="round,pad=0.3",
+                        boxstyle="round,pad=0.25",
                         fc=point["color"],
-                        ec="black",
-                        alpha=0.92,
-                        linewidth=0.8
+                        ec="none",
+                        alpha=0.94
                     ),
                     arrowprops=dict(
                         arrowstyle="-",
                         color=point["color"],
-                        linewidth=1.1,
+                        linewidth=0.9,
+                        alpha=0.7,
                         shrinkA=0,
                         shrinkB=0
                     ),
@@ -649,40 +724,41 @@ def render_signature_linechart(
         rotation_deg = 0 if len(x_labels) <= 12 else 30
         ha_align = "right" if rotation_deg > 0 else "center"
         
-    ax.set_xticklabels(x_labels, rotation=rotation_deg, ha=ha_align, fontsize=10)
+    ax.set_xticklabels(x_labels, rotation=rotation_deg, ha=ha_align, fontsize=9.5)
     
-    ax.set_xlabel(x_axis_title, fontsize=12, fontweight="bold", labelpad=10)
-    ax.set_ylabel("Temperature (°C)", fontsize=12, fontweight="bold", labelpad=10)
-    ax.set_title(title_name, fontsize=14, fontweight="bold", pad=20)
+    ax.set_xlabel(x_axis_title, fontsize=10.5, fontweight="700", labelpad=10)
+    ax.set_ylabel("Mean Surface Temperature (°C)", fontsize=10.5, fontweight="700", labelpad=10)
+    ax.set_title(title_name, fontsize=12.5, fontweight="700", loc="left", pad=16)
 
     y_min, y_max = ax.get_ylim()
-    ax.set_ylim(y_min - 1.6, y_max + 2.2)
+    ax.set_ylim(y_min - 1.5, y_max + 2.0)
 
-    legend_title = "City (Province) Ranking & Stats" if grouping_mode.startswith("City") else "Province Ranking & Stats"
-    ax.legend(
+    legend_title = "STATION BENCHMARKS" if grouping_mode.startswith("City") else "PROVINCIAL BENCHMARKS"
+    leg = ax.legend(
         title=legend_title,
-        title_fontsize=10.5,
+        title_fontsize=8.5,
         bbox_to_anchor=(1.01, 0.5),
         loc="center left",
-        fontsize=9.5,
+        fontsize=8.8,
         frameon=True,
-        facecolor="#ffffff",
-        edgecolor="#cbd5e1"
+        facecolor="#F7F4EB",
+        edgecolor="#D5D0C1"
     )
-    ax.grid(alpha=0.25, linestyle="-")
+    leg.get_title().set_fontweight("bold")
+    ax.grid(alpha=0.45, linestyle="--", linewidth=0.7)
     plt.tight_layout()
 
     user_rank = int(entity_means.index.get_loc(user_target)) + 1 if user_target in entity_means.index else None
     user_avg = float(entity_means[user_target]) if user_target in entity_means.index else None
 
     if user_target in top_2:
-        user_role = f"Top {top_2.index(user_target) + 1} Hottest"
+        user_role = f"Upper Extreme (#{top_2.index(user_target) + 1} Warmest)"
     elif user_target in bottom_2:
-        user_role = f"Top {bottom_2.index(user_target) + 1} Coldest"
+        user_role = f"Lower Extreme (#{bottom_2.index(user_target) + 1} Coolest)"
     elif user_target == median_entity:
-        user_role = "National Median"
+        user_role = "National Median Baseline"
     else:
-        user_role = f"Rank #{user_rank} out of {total_entities} (Added to Chart & Legend)"
+        user_role = f"Rank #{user_rank} of {total_entities}"
 
     summary_info = {
         "user_target": user_target,
@@ -703,270 +779,143 @@ def render_signature_linechart(
     return fig, plot_data, summary_info
 
 with st.sidebar:
-    st.markdown("## Control Panel")
-    st.caption("Configure region and forecast time range.")
+    # --- LOGO FRIEREN DI SINI ---
+    try:
+        # Pakai nama file persis seperti yang lu punya
+        st.image("frieren logo.jfif", use_container_width=True)
+    except Exception:
+        st.markdown("<h2 style='text-align: center; color: #1E5D88;'>IDN WEATHER</h2>", unsafe_allow_html=True)
+
+    st.markdown('<div class="sidebar-section-title" style="margin-top: 1.5rem;">00 / WORKBENCH VIEW</div>', unsafe_allow_html=True)
 
     nav_menu = st.radio(
         "Navigation",
         options=[
-            "Overview",
-            "Forecast Dashboard",
-            "Data Rankings",
-            "Coverage"
+            "Forecast Workbench",
+            "Spatial Rankings",
+            "Station Network",
+            "Methodology & Specs"
         ],
-        index=1
+        index=0,
+        label_visibility="collapsed"
     )
 
-    st.markdown("---")
-    st.markdown("### 1. Select Location")
-    st.caption("Select a **Province** first to filter the **City** options.")
+    st.markdown('<div class="sidebar-section-title">01 / STATION SELECTION</div>', unsafe_allow_html=True)
 
     selected_province = st.selectbox(
-        "Select Province:",
+        "Province",
         options=PROVINCES_SORTED,
-        index=PROVINCES_SORTED.index("DKI Jakarta") if "DKI Jakarta" in PROVINCES_SORTED else 0,
-        help="Select a province in Indonesia (29 Provinces available)."
+        index=PROVINCES_SORTED.index("DKI Jakarta") if "DKI Jakarta" in PROVINCES_SORTED else 0
     )
 
     filtered_cities = sorted(
         CATALOG_DF[CATALOG_DF["province"] == selected_province]["city"].unique().tolist()
     )
     selected_city = st.selectbox(
-        "Select City:",
+        "City / Station",
         options=filtered_cities,
-        index=0,
-        help="City list automatically adjusts based on your selected province."
+        index=0
     )
-    
-    if len(filtered_cities) == 1:
-        st.caption(f"ℹ️ **Only 1 city** available in {selected_province}: **{filtered_cities[0]}**")
-    else:
-        st.caption(f"ℹ️ **{len(filtered_cities)} cities** available in {selected_province}")
 
     selected_island = CATALOG_DF[
         (CATALOG_DF["province"] == selected_province) & (CATALOG_DF["city"] == selected_city)
     ]["island"].iloc[0]
 
-    st.info(
-        f"**Active Region:**\n"
-        f"• **City:** {selected_city}\n"
-        f"• **Province:** {selected_province}\n"
-        f"• **Island:** {selected_island}"
+    st.markdown(
+        f"""
+        <div class="station-box">
+            <b>STATION:</b> {selected_city.upper()}<br>
+            <b>PROVINCE:</b> {selected_province}<br>
+            <b>REGION:</b> {selected_island} ({len(filtered_cities)} stn)
+        </div>
+        """,
+        unsafe_allow_html=True
     )
 
-    st.markdown("---")
-    st.markdown("### 2. Climate Scenario")
+    st.markdown('<div class="sidebar-section-title">02 / ATMOSPHERIC FORCING</div>', unsafe_allow_html=True)
     scenario_mode = st.selectbox(
-        "Select Climate Scenario:",
+        "ENSO Phase Regime",
         options=[
             "Neutral (Baseline)",
             "El Niño (Hot & Dry)",
             "La Niña (Cool & Wet)"
         ],
-        index=0,
-        help="Applies physics-guided perturbations to compensate for model extrapolation limits."
+        index=0
     )
 
-    st.markdown("---")
-    st.markdown("### 3. Forecast Mode")
+    st.markdown('<div class="sidebar-section-title">03 / TEMPORAL HORIZON</div>', unsafe_allow_html=True)
     prediction_mode = st.selectbox(
-        "Select Time Scale:",
+        "Aggregation Window",
         options=[
-            "1. Daily Forecast (Daily Point)",
-            "2. Weekly Forecast (7 Days)",
-            "3. Multi-Month Forecast (Weekly)"
+            "1. Single-Day Point Simulation",
+            "2. 7-Day Synoptic Window",
+            "3. Multi-Month Seasonal Profile"
         ],
         index=2
     )
 
-    st.markdown("---")
-    st.markdown("### 4. Chart Options")
+    st.markdown('<div class="sidebar-section-title">04 / PLOT CONFIGURATION</div>', unsafe_allow_html=True)
     grouping_mode = st.selectbox(
-        "Entity Basis in Line Chart:",
+        "Spatial Grouping",
         options=[
             "City per Province — City (Province)",
             "Province — Province"
         ],
-        index=0,
-        help="Determines whether Top 2 Hot, Top 2 Cold, and Median rankings are calculated per City (Province) or aggregated Province."
+        index=0
     )
-    show_annotations = st.toggle("Show Value Labels (°C)", value=True)
+    show_annotations = st.toggle("Display Data Callouts (°C)", value=True)
 
-    st.markdown("---")
-    st.caption(f"⚙️ Engine Status: {model_status_text}")
-    
-    st.markdown("---")
-    st.caption("📊 **Data Source:**")
-    st.caption("[Indonesia Daily Weather (Kaggle)](https://www.kaggle.com/datasets/danielaijdkx/indonesia-daily-weather-31-cities) • Powered by [Open-Meteo](https://open-meteo.com) (CC BY 4.0)")
+    st.markdown('<div class="sidebar-section-title">SYSTEM TELEMETRY</div>', unsafe_allow_html=True)
+    st.caption(f"Engine: `{model_status_text}`")
+    st.caption("Dataset: [Indonesia Daily Weather](https://www.kaggle.com/datasets/danielaijdkx/indonesia-daily-weather-31-cities) · [Open-Meteo ERA5](https://open-meteo.com) (CC BY 4.0)")
 
-st.markdown("""
-<div class="hero-card">
-    <div class="hero-badge">CLIMATOLOGICAL INTELLIGENCE • CATBOOST ML</div>
-    <h1 class="hero-title">Indonesia Average Temperature Profile & Forecast System</h1>
-    <p class="hero-subtitle">
-        Interactive meteorological analytics platform powered by <b>Machine Learning (Tuned CatBoost Regressor)</b> 
-        to project daily mean temperatures (<code>temperature_2m_mean</code>), map extreme anomalies 
-        (Top 2 Hottest, Top 2 Coldest, & Median), and evaluate climate dynamics across 31 Cities and 29 Provinces in Indonesia.
+# Editorial Masthead (Clean, Non-AI Header)
+st.markdown(f"""
+<div class="masthead">
+    <div class="masthead-top">
+        <span class="masthead-code">IDN-CLIM // 2M SURFACE TEMPERATURE FORECASTING SYSTEM</span>
+        <span class="masthead-code">ERA5 REANALYSIS • 31 STATIONS • 2000–2035</span>
+    </div>
+    <h1 class="masthead-title">Indonesian Maritime Continent Temperature Workbench</h1>
+    <p class="masthead-desc">
+        Physics-informed gradient boosting projections (<code>temperature_2m_mean</code>) across 31 synoptic stations and 29 provinces. 
+        Combines a tuned CatBoost baseline with thermodynamic ENSO forcing and decadal warming adjustments.
     </p>
 </div>
 """, unsafe_allow_html=True)
 
-if nav_menu == "Overview":
-    st.subheader("📘 Introduction to the Average Temperature Forecast System (Climate Analytics)")
-
-    col_intro1, col_intro2 = st.columns([1.35, 1])
-    with col_intro1:
-        st.markdown("""
-        <div class="section-card">
-            <h4>🎯 Background & Objectives</h4>
-            <p>
-                Indonesia has highly diverse tropical maritime climate characteristics due to topographical variations, 
-                archipelago landscapes, and monsoon circulations (Asian and Australian). This application is designed to 
-                provide precise <b>daily mean temperature forecasting (Mean Temperature 2m)</b> while 
-                presenting comparative comparisons against national extreme regions (<b>Top 2 Hottest</b>, 
-                <b>Top 2 Coldest</b>, and <b>Median</b>).
-            </p>
-        </div>
-        <div class="section-card">
-            <h4>🧠 Machine Learning Methodology & Data Leakage Prevention</h4>
-            <p>
-                The model was trained using <b>303,645 daily weather observations</b> (2000–2026 period) with a strict 
-                chronological split: <b>Train Set (2000–2021)</b>, <b>Evaluation Set (2022–2023)</b>, and <b>Unseen Test Set (2024–2026)</b>. 
-                Variables with direct mathematical dependencies such as <code>temperature_2m_max</code>, 
-                <code>temperature_2m_min</code>, and <code>et0_fao_evapotranspiration</code> were deliberately eliminated 
-                from the input features to prevent <i>Target Leakage</i>, ensuring the model truly learns 
-                atmospheric physical drivers such as solar radiation (<code>shortwave_radiation_sum</code>), precipitation, 
-                wind speed, spatial location, and time cycles.
-            </p>
-        </div>
-        <div class="section-card">
-            <h4>📊 Data Source & Attribution</h4>
-            <p>
-                The historical weather dataset (2000–2026) used to train this model was sourced from 
-                <a href="https://www.kaggle.com/datasets/danielaijdkx/indonesia-daily-weather-31-cities" target="_blank"><b>Indonesia Daily Weather: 31 Cities since 2000</b></a> 
-                by Daniel Silalahi. The underlying data is provided by 
-                <a href="https://open-meteo.com" target="_blank"><b>Open-Meteo</b></a> under the 
-                <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">CC BY 4.0</a> license, 
-                and contains modified Copernicus Climate Change Service (ERA5 reanalysis) information.
-            </p>
-        </div>
-        """, unsafe_allow_html=True)
-
-    with col_intro2:
-        st.markdown("#### 🏆 Champion Model Performance (CatBoost)")
-        m1, m2 = st.columns(2)
-        with m1:
-            st.markdown("""
-            <div class="kpi-card">
-                <div class="kpi-label">Validation MAE / RMSE</div>
-                <div class="kpi-value">0.42°C</div>
-                <span class="kpi-delta-neg">RMSE: 0.54°C (R² = 0.836)</span>
-            </div>
-            """, unsafe_allow_html=True)
-        with m2:
-            st.markdown("""
-            <div class="kpi-card">
-                <div class="kpi-label">Unseen Test MAE (El Niño)</div>
-                <div class="kpi-value">0.60°C</div>
-                <span class="kpi-delta-neutral">RMSE: 0.79°C (R² = 0.679)</span>
-            </div>
-            """, unsafe_allow_html=True)
-
-        st.markdown("<br>", unsafe_allow_html=True)
-        st.markdown("**Optimal Hyperparameters (CatBoost Regressor):**")
-        st.code(
-            """CatBoostRegressor(
-    learning_rate=0.05,
-    depth=8,
-    iterations=500,
-    l2_leaf_reg=1,
-    random_state=42
-)""",
-            language="python"
-        )
-
-    st.markdown("---")
-    st.markdown("### 🛠️ Guide to Available Forecast Modes")
-    g1, g2, g3 = st.columns(3)
-    with g1:
-        st.info(
-            "**1. Daily Forecast**\n\n"
-            "Predicts the average temperature on a specific date for your chosen Province & City, "
-            "equipped with a weather parameter simulator (radiation, rain, wind) and position comparison against the national average."
-        )
-    with g2:
-        st.info(
-            "**2. Weekly Forecast**\n\n"
-            "Generates daily projections for the next 7 days along with a Line Chart visualization "
-            "comparing your selected City/Province with Top 2 Hottest, Top 2 Coldest, & Median."
-        )
-    with g3:
-        st.info(
-            "**3. Multi-Month Forecast**\n\n"
-            "Displays cross-month trends aggregated weekly with label formats "
-            "such as **`February, Week 1`**, **`February, Week 2`**, etc."
-        )
-
-    st.markdown("---")
-    st.markdown("### 🔬 Hybrid Physics-Informed Architecture & Sensitivity Analysis")
-    with st.expander("Click to view the scientific rationale behind the model architecture"):
-        st.markdown("""
-        To overcome the inherent inability of tree-based ensemble models to extrapolate linear temporal trends beyond historical boundaries, we implemented a **Hybrid Physics-Informed Architecture**. The final prediction is not purely from the ML model, but a combination of:
-        
-        **A. CatBoost Base Prediction (Data-Driven):** Learns complex seasonal monsoon patterns and spatial interactions from 300,000+ historical daily observations.
-        
-        **B. Domain-Driven Post-Processing (Physics-Informed):** The ML output is adjusted with physical climate signals:
-        1. **Long-Term Surface Temperature Trend (+0.03 °C / Year):**
-           Based on BMKG observations (1981–2020), the surface warming rate in Indonesia ranges from 0.2 °C to 0.3 °C per decade. Implementation: An annual linear addition of +0.03 °C for projections beyond 2026.
-        2. **ENSO Thermodynamic Offset (+0.8 °C / -0.5 °C):**
-           Because tree-based models saturate at historical extremes, we apply a direct offset to ensure the physical reality of ENSO temperature anomalies. El Niño adds +0.8 °C (Hot & Dry), while La Niña subtracts -0.5 °C (Cool & Wet). This is coupled with rainfall and radiation perturbations.
-        3. **Internal Climate Variability (Stochastic Noise):**
-           Real-world climates are chaotic. A bounded stochastic noise function (ranging ±0.15 °C) is injected based on the target year and month. This prevents flat-line multi-year projections and mimics realistic natural variability (e.g., IOD, localized convection).
-        
-        *This hybrid approach is a standard practice in Climate Informatics (similar to Bias Correction and Scenario Downscaling in IPCC reports), ensuring both data-driven accuracy and physical climate realism.*
-        """)
-
-elif nav_menu == "Forecast Dashboard":
+if nav_menu == "Forecast Workbench":
     
-    st.markdown("""
-    <div class="section-card" style="border-left-color: #F59E0B; background-color: #FFFBEB;">
-        <h4>💡 How does the Hybrid Model work? (Why the lines look the way they do)</h4>
-        <p>
-            The forecast you see is not purely from the CatBoost Machine Learning model. It uses a <b>Hybrid Physics-Informed Architecture</b>:
-            <br><br>
-            <b>1. CatBoost Base Prediction:</b><br>
-            The ML model captures the complex historical seasonal patterns (monsoon cycles) based on 300,000+ daily observations.
-            <br><br>
-            <b>2. Physics-Informed Adjustments (Post-Processing):</b><br>
-            Since tree-based models cannot extrapolate future trends or understand ENSO, we add physical signals on top of the ML output:
-            <br>• <b>Global Warming Trend:</b> +0.03 °C per year (invisible to the naked eye over a 4-year span, but scientifically accurate).
-            <br>• <b>Scenario Offset:</b> El Niño adds +0.8 °C, La Niña subtracts -0.5 °C to simulate thermodynamic anomalies.
-            <br>• <b>Stochastic Noise:</b> A bounded random fluctuation (±0.15 °C) is injected based on the year and month to simulate chaotic atmospheric variability, preventing perfectly flat lines.
-            <br><br>
-            <b>👉 How to see the real impact?</b><br>
-            Compare <b>different scenarios within the SAME year</b> (e.g., 2027 El Niño vs. 2027 La Niña). The <b>vertical gap</b> between the curves will be drastic (a difference of 1.3 °C), proving the physical dynamics are working!
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
+    with st.expander("Technical Note: Interpreting Multi-Year Curves & Hybrid ENSO Adjustments", expanded=False):
+        st.markdown("""
+        **Why consecutive years appear similar under identical scenarios:**
+        1. **Climatological Forcing Inputs:** Tree-based models cannot extrapolate beyond historical bounds. Baseline daily meteorological drivers (solar radiation, precipitation, wind) are drawn from 26-year historical day-of-year climatology.
+        2. **Decadal Warming Rate (+0.03 °C/year):** The linear surface warming trend adds +0.12 °C over a 4-year interval—physically realistic per BMKG records, but subtle on a 20°C–32°C axis.
+        3. **Evaluating Physical Sensitivity:** To observe substantial thermodynamic shifts, compare **Neutral vs. El Niño (+0.8 °C offset, -40% rain, +15% insolation)** or **La Niña (-0.5 °C offset)** within the same calendar year.
+        """)
     
     if prediction_mode.startswith("1."):
-        st.subheader(f"📅 Daily Temperature Forecast — {selected_city}, {selected_province}")
+        st.markdown(f"### Single-Day Point Simulation — {selected_city}, {selected_province}")
         
         if scenario_mode != "Neutral (Baseline)":
-            st.warning(f"⚠️ **Active Scenario: {scenario_mode}**. The prediction results have been adjusted for ENSO climate anomalies.")
+            st.markdown(f"""
+            <div class="tech-panel-sky">
+                <div class="tech-panel-header">ACTIVE TELECONNECTIONS OVERRIDE // {scenario_mode.upper()}</div>
+                <p>Climatological inputs are perturbed to reflect ENSO phase anomalies prior to CatBoost inference.</p>
+            </div>
+            """, unsafe_allow_html=True)
 
         col_cfg, col_sim = st.columns([1, 1.8])
         with col_cfg:
             target_date = st.date_input(
-                "Select Forecast Date:",
+                "Target Observation Date",
                 value=datetime.date(2027, 2, 15),
                 min_value=datetime.date(2000, 1, 1),
                 max_value=datetime.date(2035, 12, 31)
             )
             use_custom_weather = st.checkbox(
-                "Manually Adjust Weather Parameters (What-If Simulation)",
-                value=False,
-                help="If unchecked, the system automatically uses historical climatological averages for that date."
+                "Override Meteorological Inputs (Manual Sensitivity Test)",
+                value=False
             )
 
         doy_val = pd.Timestamp(target_date).dayofyear
@@ -980,16 +929,16 @@ elif nav_menu == "Forecast Dashboard":
         custom_override = None
         with col_sim:
             if use_custom_weather:
-                st.markdown("**🎛️ Daily Meteorological Parameter Simulator:**")
+                st.markdown("**Manual Meteorological Forcing Parameters**")
                 s1, s2, s3 = st.columns(3)
                 with s1:
-                    sim_rad = st.slider("Solar Radiation (MJ/m²)", 1.0, 30.0, float(row_p["shortwave_radiation_sum"]), 0.1)
-                    sim_wcode = st.selectbox("Weather Code (WMO)", [0.0, 1.0, 2.0, 3.0, 51.0, 53.0, 55.0, 61.0, 63.0, 65.0], index=4)
+                    sim_rad = st.slider("Shortwave Radiation (MJ/m²)", 1.0, 30.0, float(row_p["shortwave_radiation_sum"]), 0.1)
+                    sim_wcode = st.selectbox("WMO Weather Code", [0.0, 1.0, 2.0, 3.0, 51.0, 53.0, 55.0, 61.0, 63.0, 65.0], index=4)
                 with s2:
-                    sim_psum = st.slider("Precipitation (mm)", 0.0, 150.0, float(row_p["precipitation_sum"]), 0.5)
-                    sim_phours = st.slider("Precipitation Duration (hours)", 0.0, 24.0, float(row_p["precipitation_hours"]), 1.0)
+                    sim_psum = st.slider("Precipitation Sum (mm)", 0.0, 150.0, float(row_p["precipitation_sum"]), 0.5)
+                    sim_phours = st.slider("Precipitation Hours (h)", 0.0, 24.0, float(row_p["precipitation_hours"]), 1.0)
                 with s3:
-                    sim_ws = st.slider("Max Wind Speed (km/h)", 2.0, 50.0, float(row_p["wind_speed_10m_max"]), 0.5)
+                    sim_ws = st.slider("Max Wind 10m (km/h)", 2.0, 50.0, float(row_p["wind_speed_10m_max"]), 0.5)
                     sim_wg = st.slider("Max Wind Gusts (km/h)", 10.0, 90.0, float(row_p["wind_gusts_10m_max"]), 0.5)
 
                 custom_override = {
@@ -1002,13 +951,13 @@ elif nav_menu == "Forecast Dashboard":
                 }
             else:
                 st.markdown(f"""
-                <div class="section-card">
-                    <h4>📡 Automatic Climatology Mode Active</h4>
+                <div class="tech-panel">
+                    <div class="tech-panel-header">CLIMATOLOGICAL BASELINE INPUTS // DOY {doy_val:03d}</div>
                     <p>
-                        The system uses historical average profiles for <b>{selected_city} ({selected_province})</b> on 
-                        <b>{target_date.strftime("%d %B %Y")}</b>: Solar Radiation <b>{row_p["shortwave_radiation_sum"]:.1f} MJ/m²</b>, 
-                        Precipitation <b>{row_p["precipitation_sum"]:.1f} mm</b> ({row_p["precipitation_hours"]:.1f} hours), 
-                        and Max Wind Speed <b>{row_p["wind_speed_10m_max"]:.1f} km/h</b>. Check the box on the left to test extreme weather scenarios.
+                        <b>{selected_city} ({selected_province})</b> on <b>{target_date.strftime("%d %b %Y")}</b>:<br>
+                        Shortwave Radiation: <span class="mono-val">{row_p["shortwave_radiation_sum"]:.1f} MJ/m²</span> &nbsp;|&nbsp; 
+                        Precipitation: <span class="mono-val">{row_p["precipitation_sum"]:.1f} mm ({row_p["precipitation_hours"]:.1f} h)</span> &nbsp;|&nbsp; 
+                        Max Wind (10m): <span class="mono-val">{row_p["wind_speed_10m_max"]:.1f} km/h</span>
                     </p>
                 </div>
                 """, unsafe_allow_html=True)
@@ -1031,29 +980,29 @@ elif nav_menu == "Forecast Dashboard":
         median_city = day_sorted.iloc[len(day_sorted) // 2]["city"]
 
         if selected_city in top_2_cities:
-            status_badge = f"🔥 Top {top_2_cities.index(selected_city) + 1} Hottest"
+            status_badge = f"Upper Extreme (#{top_2_cities.index(selected_city) + 1} Warmest)"
         elif selected_city in bottom_2_cities:
-            status_badge = f"❄️ Top {bottom_2_cities.index(selected_city) + 1} Coldest"
+            status_badge = f"Lower Extreme (#{bottom_2_cities.index(selected_city) + 1} Coolest)"
         elif selected_city == median_city:
-            status_badge = "⚖️ National Median"
+            status_badge = "National Median"
         else:
-            status_badge = f"📍 Rank #{int(user_row['rank'])} of {len(day_sorted)} Cities"
+            status_badge = f"Rank #{int(user_row['rank'])} of {len(day_sorted)} Stations"
 
         k1, k2, k3, k4 = st.columns(4)
         with k1:
             delta_cls = "kpi-delta-pos" if diff_nat >= 0 else "kpi-delta-neg"
             st.markdown(f"""
             <div class="kpi-card">
-                <div class="kpi-label">Predicted Temperature ({selected_city})</div>
+                <div class="kpi-label">PROJECTED MEAN ({selected_city})</div>
                 <div class="kpi-value">{user_row['predicted_temp_mean']:.2f}°C</div>
-                <span class="{delta_cls}">{diff_nat:+.2f}°C vs National Average</span>
+                <span class="{delta_cls}">{diff_nat:+.2f}°C vs National Mean</span>
             </div>
             """, unsafe_allow_html=True)
         with k2:
             st.markdown(f"""
             <div class="kpi-card">
-                <div class="kpi-label">Your Selected City Position</div>
-                <div class="kpi-value" style="font-size:1.35rem;">{status_badge}</div>
+                <div class="kpi-label">NATIONAL DISTRIBUTION PERCENTILE</div>
+                <div class="kpi-value" style="font-size:1.15rem; padding-top:0.35rem;">{status_badge}</div>
                 <span class="kpi-delta-neutral">Province: {selected_province}</span>
             </div>
             """, unsafe_allow_html=True)
@@ -1061,7 +1010,7 @@ elif nav_menu == "Forecast Dashboard":
             hottest_r = day_sorted.iloc[0]
             st.markdown(f"""
             <div class="kpi-card">
-                <div class="kpi-label">Top 1 Hottest Today</div>
+                <div class="kpi-label">WARMEST STATION (MAX #1)</div>
                 <div class="kpi-value">{hottest_r['predicted_temp_mean']:.2f}°C</div>
                 <span class="kpi-delta-pos">{hottest_r['city']} ({hottest_r['province']})</span>
             </div>
@@ -1070,71 +1019,68 @@ elif nav_menu == "Forecast Dashboard":
             coldest_r = day_sorted.iloc[-1]
             st.markdown(f"""
             <div class="kpi-card">
-                <div class="kpi-label">Top 1 Coldest Today</div>
+                <div class="kpi-label">COOLEST STATION (MIN #1)</div>
                 <div class="kpi-value">{coldest_r['predicted_temp_mean']:.2f}°C</div>
                 <span class="kpi-delta-neg">{coldest_r['city']} ({coldest_r['province']})</span>
             </div>
             """, unsafe_allow_html=True)
 
         st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown(f"#### Cross-Station Distribution ({target_date.strftime('%d %b %Y')})")
 
-        st.markdown(f"#### 📊 Daily Temperature Comparison ({target_date.strftime('%d %B %Y')}): Top 2 Hottest, Top 2 Coldest, Median & Your Selection")
         bench_Indices = [0, 1, len(day_sorted) // 2, len(day_sorted) - 2, len(day_sorted) - 1]
         bench_df = day_sorted.iloc[bench_Indices].copy()
         if selected_city not in bench_df["city"].values:
             bench_df = pd.concat([bench_df, day_sorted[day_sorted["city"] == selected_city]], ignore_index=True)
         bench_df = bench_df.sort_values("predicted_temp_mean", ascending=True)
 
-        fig_bar, ax_bar = plt.subplots(figsize=(12, 4.8), dpi=120)
+        fig_bar, ax_bar = plt.subplots(figsize=(12, 4.6), dpi=120)
         bar_colors = []
         bar_labels = []
         for _, r in bench_df.iterrows():
             c_name = r["city"]
             p_name = r["province"]
-            tag = " ★ (Your Selection)" if c_name == selected_city else ""
+            tag = " [Active]" if c_name == selected_city else ""
             if c_name == top_2_cities[0]:
-                bar_colors.append("#d62728")
-                bar_labels.append(f"[Top 1 Hottest] {c_name} ({p_name}){tag}")
+                bar_colors.append("#B8332A")
+                bar_labels.append(f"[MAX #1] {c_name} ({p_name}){tag}")
             elif c_name == top_2_cities[1]:
-                bar_colors.append("#ff7f0e")
-                bar_labels.append(f"[Top 2 Hottest] {c_name} ({p_name}){tag}")
+                bar_colors.append("#D97724")
+                bar_labels.append(f"[MAX #2] {c_name} ({p_name}){tag}")
             elif c_name == bottom_2_cities[1]:
-                bar_colors.append("#08306b")
-                bar_labels.append(f"[Top 1 Coldest] {c_name} ({p_name}){tag}")
+                bar_colors.append("#165682")
+                bar_labels.append(f"[MIN #1] {c_name} ({p_name}){tag}")
             elif c_name == bottom_2_cities[0]:
-                bar_colors.append("#6baed6")
-                bar_labels.append(f"[Top 2 Coldest] {c_name} ({p_name}){tag}")
+                bar_colors.append("#5DA2D5")
+                bar_labels.append(f"[MIN #2] {c_name} ({p_name}){tag}")
             elif c_name == median_city:
-                bar_colors.append("#7f7f7f")
-                bar_labels.append(f"[Median] {c_name} ({p_name}){tag}")
+                bar_colors.append("#7C8B99")
+                bar_labels.append(f"[MEDIAN] {c_name} ({p_name}){tag}")
             else:
-                bar_colors.append("#16a34a")
-                bar_labels.append(f"[Your Selection • Rank #{int(r['rank'])}] {c_name} ({p_name})")
+                bar_colors.append("#2B7A57")
+                bar_labels.append(f"[RANK #{int(r['rank'])}] {c_name} ({p_name})")
 
-        bars = ax_bar.barh(bar_labels, bench_df["predicted_temp_mean"], color=bar_colors, edgecolor="black", height=0.58)
-        ax_bar.axvline(nat_avg, color="black", linestyle="--", linewidth=1.8, label=f"National Average ({nat_avg:.2f}°C)")
-        ax_bar.set_xlim(bench_df["predicted_temp_mean"].min() - 1.5, bench_df["predicted_temp_mean"].max() + 1.5)
-        ax_bar.set_xlabel("Predicted Mean Temperature (°C)", fontweight="bold")
+        bars = ax_bar.barh(bar_labels, bench_df["predicted_temp_mean"], color=bar_colors, edgecolor="none", height=0.55)
+        ax_bar.axvline(nat_avg, color="#182633", linestyle="--", linewidth=1.5, label=f"National Mean ({nat_avg:.2f}°C)")
+        ax_bar.set_xlim(bench_df["predicted_temp_mean"].min() - 1.5, bench_df["predicted_temp_mean"].max() + 1.8)
+        ax_bar.set_xlabel("Projected 2m Mean Temperature (°C)", fontweight="bold")
         for b in bars:
             w = b.get_width()
             diff_b = w - nat_avg
-            ax_bar.text(w + 0.08, b.get_y() + b.get_height() / 2, f"{w:.2f}°C ({diff_b:+.2f}°C)", va="center", fontweight="bold", fontsize=9)
-        ax_bar.legend(loc="lower right")
-        ax_bar.grid(axis="x", alpha=0.25)
+            ax_bar.text(w + 0.08, b.get_y() + b.get_height() / 2, f"{w:.2f}°C ({diff_b:+.2f}°C)", va="center", fontweight="600", fontsize=8.8)
+        ax_bar.legend(loc="lower right", frameon=True, facecolor="#F7F4EB", edgecolor="#D5D0C1")
+        ax_bar.grid(axis="x", alpha=0.45, linestyle="--")
         plt.tight_layout()
         st.pyplot(fig_bar)
         plt.close(fig_bar)
 
     elif prediction_mode.startswith("2."):
-        st.subheader(f"📆 Weekly Forecast (7 Days) — Focus: {selected_city} ({selected_province})")
+        st.markdown(f"### 7-Day Synoptic Forecast — {selected_city} ({selected_province})")
         
-        if scenario_mode != "Neutral (Baseline)":
-            st.warning(f"⚠️ **Active Scenario: {scenario_mode}**. The prediction results have been adjusted for ENSO climate anomalies.")
-
-        c_date1, c_date2 = st.columns([1, 2])
+        c_date1, c_date2 = st.columns([1, 2.2])
         with c_date1:
             start_date_w = st.date_input(
-                "Select Start Date (Next 7 Days):",
+                "Synoptic Window Start Date",
                 value=datetime.date(2027, 2, 1),
                 min_value=datetime.date(2000, 1, 1),
                 max_value=datetime.date(2035, 12, 20)
@@ -1142,11 +1088,10 @@ elif nav_menu == "Forecast Dashboard":
         end_date_w = start_date_w + datetime.timedelta(days=6)
         with c_date2:
             st.markdown(f"""
-            <div class="section-card">
-                <h4>🗓️ Weekly Forecast Range: {start_date_w.strftime('%d %b %Y')} to {end_date_w.strftime('%d %b %Y')}</h4>
+            <div class="tech-panel">
+                <div class="tech-panel-header">HORIZON WINDOW // {start_date_w.strftime('%d %b %Y').upper()} – {end_date_w.strftime('%d %b %Y').upper()}</div>
                 <p>
-                    Displays a daily Line Chart for 7 full days featuring <b>Top 2 Hottest</b>, 
-                    <b>Top 2 Coldest</b>, <b>Median</b>, and the position of <b>{selected_city} ({selected_province})</b>.
+                    7-day trajectory comparing <b>{selected_city} ({selected_province})</b> against national upper/lower temperature extremes under <b>{scenario_mode}</b> conditions.
                 </p>
             </div>
             """, unsafe_allow_html=True)
@@ -1162,8 +1107,8 @@ elif nav_menu == "Forecast Dashboard":
             df_pred=df_week,
             time_col="time_idx",
             x_labels=x_labels_w,
-            title_name=f"Weekly Mean Temperature Profile ({start_date_w.strftime('%d %b')} - {end_date_w.strftime('%d %b %Y')}): Top 2 Hottest, Top 2 Coldest, & Median",
-            x_axis_title="Day of Week",
+            title_name=f"7-Day Surface Temperature Trajectory ({start_date_w.strftime('%d %b')} – {end_date_w.strftime('%d %b %Y')})",
+            x_axis_title="Synoptic Date",
             selected_city=selected_city,
             selected_province=selected_province,
             grouping_mode=grouping_mode,
@@ -1177,7 +1122,7 @@ elif nav_menu == "Forecast Dashboard":
             cls_u = "kpi-delta-pos" if diff_u >= 0 else "kpi-delta-neg"
             st.markdown(f"""
             <div class="kpi-card">
-                <div class="kpi-label">7-Day Average ({info_w['user_target']})</div>
+                <div class="kpi-label">7-DAY MEAN ({info_w['user_target']})</div>
                 <div class="kpi-value">{info_w['user_avg']:.2f}°C</div>
                 <span class="{cls_u}">{diff_u:+.2f}°C vs National ({info_w['national_mean']:.2f}°C)</span>
             </div>
@@ -1185,15 +1130,15 @@ elif nav_menu == "Forecast Dashboard":
         with kw2:
             st.markdown(f"""
             <div class="kpi-card">
-                <div class="kpi-label">Status in Line Chart & Legend</div>
-                <div class="kpi-value" style="font-size:1.2rem;">{info_w['user_role']}</div>
-                <span class="kpi-delta-neutral">Automatically integrated in Legend</span>
+                <div class="kpi-label">BENCHMARK STANDING</div>
+                <div class="kpi-value" style="font-size:1.15rem; padding-top:0.35rem;">{info_w['user_role']}</div>
+                <span class="kpi-delta-neutral">Scenario: {scenario_mode}</span>
             </div>
             """, unsafe_allow_html=True)
         with kw3:
             st.markdown(f"""
             <div class="kpi-card">
-                <div class="kpi-label">Top 1 Hottest This Week</div>
+                <div class="kpi-label">UPPER EXTREME (MAX #1)</div>
                 <div class="kpi-value">{info_w['top_1_hottest_val']:.2f}°C</div>
                 <span class="kpi-delta-pos">{info_w['top_1_hottest']}</span>
             </div>
@@ -1201,7 +1146,7 @@ elif nav_menu == "Forecast Dashboard":
         with kw4:
             st.markdown(f"""
             <div class="kpi-card">
-                <div class="kpi-label">Top 1 Coldest This Week</div>
+                <div class="kpi-label">LOWER EXTREME (MIN #1)</div>
                 <div class="kpi-value">{info_w['top_1_coldest_val']:.2f}°C</div>
                 <span class="kpi-delta-neg">{info_w['top_1_coldest']}</span>
             </div>
@@ -1211,38 +1156,34 @@ elif nav_menu == "Forecast Dashboard":
         st.pyplot(fig_w)
         plt.close(fig_w)
 
-        with st.expander("📋 View Full Weekly Forecast Data Table"):
+        with st.expander("View Numerical 7-Day Matrix"):
             disp_w = plot_data_w.copy()
             disp_w.index = x_labels_w
-            st.dataframe(disp_w.style.format("{:.2f}°C"), width="stretch")
+            st.dataframe(disp_w.style.format("{:.2f}°C"), use_container_width=True)
 
     elif prediction_mode.startswith("3."):
-        st.subheader(f"📊 Multi-Month Forecast (Weekly) — Focus: {selected_city} ({selected_province})")
-        
-        if scenario_mode != "Neutral (Baseline)":
-            st.warning(f"⚠️ **Active Scenario: {scenario_mode}**. The prediction results have been adjusted for ENSO climate anomalies.")
+        st.markdown(f"### Multi-Month Seasonal Profile — {selected_city} ({selected_province})")
 
         month_names_list = list(calendar.month_name)[1:]
         c_mm1, c_mm2, c_mm3, c_mm4 = st.columns([1, 1.1, 1.1, 1.3])
         with c_mm1:
-            sel_year_mm = st.number_input("Forecast Year:", min_value=2000, max_value=2035, value=2027, step=1)
+            sel_year_mm = st.number_input("Target Year", min_value=2000, max_value=2035, value=2027, step=1)
         with c_mm2:
-            start_month_name = st.selectbox("From Month (Start Month):", options=month_names_list, index=1)
+            start_month_name = st.selectbox("Start Month", options=month_names_list, index=0)
             start_m_idx = month_names_list.index(start_month_name) + 1
         with c_mm3:
             valid_end_months = month_names_list[start_m_idx - 1:]
-            default_end_idx = min(2, len(valid_end_months) - 1)
-            end_month_name = st.selectbox("To Month (End Month):", options=valid_end_months, index=default_end_idx)
+            default_end_idx = len(valid_end_months) - 1
+            end_month_name = st.selectbox("End Month", options=valid_end_months, index=default_end_idx)
             end_m_idx = month_names_list.index(end_month_name) + 1
         with c_mm4:
             agg_style_mm = st.selectbox(
-                "X-Axis Interval Format:",
+                "Temporal Resolution",
                 options=[
-                    "Weekly (e.g., February, Week 1)",
-                    "Monthly (e.g., Jan, Feb, Mar...)"
+                    "Monthly (Jan, Feb, Mar...)",
+                    "Weekly (Month, Week 1..4)"
                 ],
-                index=0,
-                help="As specified: for multi-months, automatically uses 'Month, Week 1..4' format."
+                index=0
             )
 
         start_dt_mm = datetime.date(int(sel_year_mm), int(start_m_idx), 1)
@@ -1262,28 +1203,30 @@ elif nav_menu == "Forecast Dashboard":
             for p_code in ordered_periods:
                 m_num = p_code // 10
                 w_num = p_code % 10
-                m_str = calendar.month_name[m_num]
-                x_labels_mm.append(f"{m_str}, Week {w_num}")
+                m_str = calendar.month_abbr[m_num]
+                x_labels_mm.append(f"{m_str} W{w_num}")
 
             time_col_mm = "period_order"
-            x_title_mm = f"Weekly Timeline ({start_month_name} – {end_month_name} {sel_year_mm})"
+            x_title_mm = f"Weekly Aggregation ({start_month_name} – {end_month_name} {sel_year_mm})"
+            rot_mm = 90
         else:
             time_col_mm = "month"
             ordered_months = sorted(df_multi["month"].unique().tolist())
             x_labels_mm = [calendar.month_abbr[m] for m in ordered_months]
-            x_title_mm = f"Months ({start_month_name} – {end_month_name} {sel_year_mm})"
+            x_title_mm = f"Calendar Month ({start_month_name} – {end_month_name} {sel_year_mm})"
+            rot_mm = 0
 
         fig_mm, plot_data_mm, info_mm = render_signature_linechart(
             df_pred=df_multi,
             time_col=time_col_mm,
             x_labels=x_labels_mm,
-            title_name=f"Multi-Month Mean Temperature Profile ({start_month_name} – {end_month_name} {sel_year_mm}): Top 2 Hottest, Top 2 Coldest, & Median",
+            title_name=f"Seasonal Temperature Regime ({start_month_name} – {end_month_name} {sel_year_mm}) // {scenario_mode}",
             x_axis_title=x_title_mm,
             selected_city=selected_city,
             selected_province=selected_province,
             grouping_mode=grouping_mode,
             show_annotations=show_annotations,
-            x_rotation=90
+            x_rotation=rot_mm
         )
 
         kmm1, kmm2, kmm3, kmm4 = st.columns(4)
@@ -1292,7 +1235,7 @@ elif nav_menu == "Forecast Dashboard":
             cls_umm = "kpi-delta-pos" if diff_umm >= 0 else "kpi-delta-neg"
             st.markdown(f"""
             <div class="kpi-card">
-                <div class="kpi-label">Period Average ({info_mm['user_target']})</div>
+                <div class="kpi-label">PERIOD MEAN ({info_mm['user_target']})</div>
                 <div class="kpi-value">{info_mm['user_avg']:.2f}°C</div>
                 <span class="{cls_umm}">{diff_umm:+.2f}°C vs National ({info_mm['national_mean']:.2f}°C)</span>
             </div>
@@ -1300,15 +1243,15 @@ elif nav_menu == "Forecast Dashboard":
         with kmm2:
             st.markdown(f"""
             <div class="kpi-card">
-                <div class="kpi-label">Your Selected Region Status</div>
-                <div class="kpi-value" style="font-size:1.18rem;">{info_mm['user_role']}</div>
-                <span class="kpi-delta-neutral">Listed in Chart Legend</span>
+                <div class="kpi-label">BENCHMARK STANDING</div>
+                <div class="kpi-value" style="font-size:1.15rem; padding-top:0.35rem;">{info_mm['user_role']}</div>
+                <span class="kpi-delta-neutral">Scenario: {scenario_mode}</span>
             </div>
             """, unsafe_allow_html=True)
         with kmm3:
             st.markdown(f"""
             <div class="kpi-card">
-                <div class="kpi-label">Top 1 Hottest This Period</div>
+                <div class="kpi-label">UPPER EXTREME (MAX #1)</div>
                 <div class="kpi-value">{info_mm['top_1_hottest_val']:.2f}°C</div>
                 <span class="kpi-delta-pos">{info_mm['top_1_hottest']}</span>
             </div>
@@ -1316,7 +1259,7 @@ elif nav_menu == "Forecast Dashboard":
         with kmm4:
             st.markdown(f"""
             <div class="kpi-card">
-                <div class="kpi-label">Top 1 Coldest This Period</div>
+                <div class="kpi-label">LOWER EXTREME (MIN #1)</div>
                 <div class="kpi-value">{info_mm['top_1_coldest_val']:.2f}°C</div>
                 <span class="kpi-delta-neg">{info_mm['top_1_coldest']}</span>
             </div>
@@ -1326,28 +1269,25 @@ elif nav_menu == "Forecast Dashboard":
         st.pyplot(fig_mm)
         plt.close(fig_mm)
 
-        with st.expander("📋 View Weekly Data Table ('Month, Week X' Format) & Download CSV"):
+        with st.expander("Export Seasonal Forecast Matrix (CSV)"):
             disp_mm = plot_data_mm.copy()
             disp_mm.index = x_labels_mm
-            st.dataframe(disp_mm.style.format("{:.2f}°C"), width="stretch")
+            st.dataframe(disp_mm.style.format("{:.2f}°C"), use_container_width=True)
             csv_bytes = disp_mm.to_csv().encode("utf-8")
             st.download_button(
-                label="⬇️ Download Forecast Data (CSV)",
+                label="Download CSV Table",
                 data=csv_bytes,
-                file_name=f"temperature_forecast_{selected_city}_{sel_year_mm}.csv",
+                file_name=f"idn_temp_forecast_{selected_city}_{sel_year_mm}.csv",
                 mime="text/csv"
             )
 
-elif nav_menu == "Data Rankings":
-    st.subheader("🏆 Complete Temperature Rankings of Cities & Provinces in Indonesia")
-    st.write(
-        "This page displays the full ranking table of all 31 Cities (29 Provinces) along with their status "
-        "of whether the region falls into the **Top 2 Hottest**, **Top 2 Coldest**, or **Median** categories."
-    )
+elif nav_menu == "Spatial Rankings":
+    st.markdown("### Spatial Temperature Rankings Across 31 Indonesian Stations")
+    st.caption("Annualized distribution of projected 2m mean temperatures, shortwave insolation, and daily precipitation.")
 
-    col_r1, col_r2 = st.columns([1, 2])
+    col_r1, col_r2 = st.columns([1, 2.5])
     with col_r1:
-        rank_year = st.number_input("Select Evaluation Year:", min_value=2000, max_value=2035, value=2027, step=1)
+        rank_year = st.number_input("Evaluation Year", min_value=2000, max_value=2035, value=2027, step=1)
     with col_r2:
         sample_dates = [datetime.date(int(rank_year), m, 15) for m in range(1, 13)]
         df_rank_year = predict_dates_all_locations(sample_dates, scenario=scenario_mode)
@@ -1367,65 +1307,58 @@ elif nav_menu == "Data Rankings":
     )
     rank_summary["Rank"] = rank_summary.index + 1
     nat_mean_yr = rank_summary["Mean_Temp"].mean()
-    rank_summary["Deviation vs National (°C)"] = rank_summary["Mean_Temp"] - nat_mean_yr
+    rank_summary["Anomaly vs National (°C)"] = rank_summary["Mean_Temp"] - nat_mean_yr
 
     med_idx = len(rank_summary) // 2
     kategori_list = []
     for idx, r in rank_summary.iterrows():
         if idx == 0:
-            kat = "🔥 Top 1 Hottest"
+            kat = "MAX #1 (Warmest)"
         elif idx == 1:
-            kat = "🔥 Top 2 Hottest"
+            kat = "MAX #2 (Warmest)"
         elif idx == len(rank_summary) - 1:
-            kat = "❄️ Top 1 Coldest"
+            kat = "MIN #1 (Coolest)"
         elif idx == len(rank_summary) - 2:
-            kat = "❄️ Top 2 Coldest"
+            kat = "MIN #2 (Coolest)"
         elif idx == med_idx:
-            kat = "⚖️ Median"
+            kat = "MEDIAN BASELINE"
         else:
-            kat = "Normal"
+            kat = "Mid-Range"
         if r["city"] == selected_city:
-            kat += " ★ (Your Selection)"
+            kat += " [Active]"
         kategori_list.append(kat)
 
-    rank_summary["Benchmark Category"] = kategori_list
+    rank_summary["Classification"] = kategori_list
 
     st.dataframe(
         rank_summary[[
-            "Rank", "Benchmark Category", "city", "province", "island",
-            "Mean_Temp", "Deviation vs National (°C)", "Min_Month_Temp", "Max_Month_Temp",
+            "Rank", "Classification", "city", "province", "island",
+            "Mean_Temp", "Anomaly vs National (°C)", "Min_Month_Temp", "Max_Month_Temp",
             "Avg_Solar_Rad", "Avg_Precip"
         ]].rename(columns={
-            "city": "City",
+            "city": "Station / City",
             "province": "Province",
-            "island": "Island",
-            "Mean_Temp": "Annual Average (°C)",
-            "Min_Month_Temp": "Min Monthly Temp (°C)",
-            "Max_Month_Temp": "Max Monthly Temp (°C)",
-            "Avg_Solar_Rad": "Solar Radiation (MJ/m²)",
-            "Avg_Precip": "Precipitation (mm/day)"
+            "island": "Archipelago",
+            "Mean_Temp": "Annual Mean (°C)",
+            "Min_Month_Temp": "Min Month (°C)",
+            "Max_Month_Temp": "Max Month (°C)",
+            "Avg_Solar_Rad": "Insolation (MJ/m²)",
+            "Avg_Precip": "Precip (mm/d)"
         }).style.format({
-            "Annual Average (°C)": "{:.2f}°C",
-            "Deviation vs National (°C)": "{:+.2f}°C",
-            "Min Monthly Temp (°C)": "{:.2f}°C",
-            "Max Monthly Temp (°C)": "{:.2f}°C",
-            "Solar Radiation (MJ/m²)": "{:.2f}",
-            "Precipitation (mm/day)": "{:.2f}"
+            "Annual Mean (°C)": "{:.2f}°C",
+            "Anomaly vs National (°C)": "{:+.2f}°C",
+            "Min Month (°C)": "{:.2f}°C",
+            "Max Month (°C)": "{:.2f}°C",
+            "Insolation (MJ/m²)": "{:.2f}",
+            "Precip (mm/d)": "{:.2f}"
         }),
-        width="stretch",
-        height=600
+        use_container_width=True,
+        height=620
     )
 
-elif nav_menu == "Coverage":
-    st.subheader("📍 Dataset Coverage: Available Cities per Province")
-    
-    st.info(
-        "**📌 Transparency Note:** The current dataset only contains **31 representative cities** across "
-        "**29 provinces** in Indonesia. Some provinces have multiple cities registered "
-        "(e.g., Jawa Timur → Surabaya & Malang), while others only have **1 representative city** "
-        "(e.g., Jawa Tengah → Semarang only). "
-        "This page provides full transparency on what is actually available in the dataset."
-    )
+elif nav_menu == "Station Network":
+    st.markdown("### Synoptic Station Network & Provincial Coverage")
+    st.caption("Inventory of the 31 representative meteorological stations across 29 Indonesian provinces included in the ERA5 training catalog.")
     
     coverage_df = (
         CATALOG_DF.groupby(["island", "province"])
@@ -1441,46 +1374,44 @@ elif nav_menu == "Coverage":
     with cov1:
         st.markdown(f"""
         <div class="kpi-card">
-            <div class="kpi-label">Total Provinces</div>
+            <div class="kpi-label">PROVINCIAL JURISDICTIONS</div>
             <div class="kpi-value">{coverage_df["province"].nunique()}</div>
-            <span class="kpi-delta-neutral">Covered in Dataset</span>
+            <span class="kpi-delta-neutral">Represented in Catalog</span>
         </div>
         """, unsafe_allow_html=True)
     with cov2:
         st.markdown(f"""
         <div class="kpi-card">
-            <div class="kpi-label">Total Cities</div>
+            <div class="kpi-label">SYNOPTIC STATIONS</div>
             <div class="kpi-value">{CATALOG_DF["city"].nunique()}</div>
-            <span class="kpi-delta-neutral">Registered in Catalog</span>
+            <span class="kpi-delta-neutral">Active City Nodes</span>
         </div>
         """, unsafe_allow_html=True)
     with cov3:
         multi_city = int((coverage_df["City_Count"] > 1).sum())
         st.markdown(f"""
         <div class="kpi-card">
-            <div class="kpi-label">Multi-City Provinces</div>
+            <div class="kpi-label">MULTI-STATION PROVINCES</div>
             <div class="kpi-value">{multi_city}</div>
-            <span class="kpi-delta-pos">2+ cities available</span>
+            <span class="kpi-delta-neg">Jawa Timur, Kaltim</span>
         </div>
         """, unsafe_allow_html=True)
     with cov4:
         single_city = int((coverage_df["City_Count"] == 1).sum())
         st.markdown(f"""
         <div class="kpi-card">
-            <div class="kpi-label">Single-City Provinces</div>
+            <div class="kpi-label">SINGLE-STATION PROVINCES</div>
             <div class="kpi-value">{single_city}</div>
-            <span class="kpi-delta-neg">Only 1 representative</span>
+            <span class="kpi-delta-neutral">1 Representative Node</span>
         </div>
         """, unsafe_allow_html=True)
     
     st.markdown("<br>", unsafe_allow_html=True)
     
-    st.markdown("### 📋 Full Coverage Table: Province → Available Cities")
-    
     search_query = st.text_input(
-        "🔍 Search province or city (optional):",
+        "Filter by Province or Station Name",
         value="",
-        placeholder="e.g., Jawa, Papua, Semarang..."
+        placeholder="Type province or city name (e.g., Jawa, Papua, Semarang)..."
     ).strip().lower()
     
     display_df = coverage_df.copy()
@@ -1492,54 +1423,83 @@ elif nav_menu == "Coverage":
     
     st.dataframe(
         display_df.rename(columns={
-            "island": "Island",
+            "island": "Island Group",
             "province": "Province",
-            "City_Count": "City Count",
-            "Cities": "Available Cities"
+            "City_Count": "Station Count",
+            "Cities": "Registered Stations"
         }),
-        width="stretch",
-        height=500
+        use_container_width=True,
+        height=480
     )
-    
-    if display_df.empty:
-        st.warning(f"⚠️ No province or city matches '{search_query}'. Try a different search term.")
-    
-    st.markdown("### 📊 City Count Distribution per Province")
-    st.caption("🔴 Red = Only 1 city available | 🟢 Green = 2 or more cities available")
-    
-    chart_df = coverage_df.sort_values("City_Count", ascending=True).copy()
-    
-    fig_cov, ax_cov = plt.subplots(figsize=(14, 8), dpi=120)
-    
-    colors_cov = ["#dc2626" if c == 1 else "#16a34a" for c in chart_df["City_Count"]]
-    bars_cov = ax_cov.barh(chart_df["province"], chart_df["City_Count"], color=colors_cov, edgecolor="black")
-    ax_cov.set_xlabel("Number of Available Cities", fontweight="bold")
-    ax_cov.set_title("Dataset Coverage: Cities per Province in Indonesia", fontweight="bold", fontsize=13, pad=15)
-    ax_cov.set_xlim(0, chart_df["City_Count"].max() + 0.8)
-    
-    for b in bars_cov:
-        w = b.get_width()
-        ax_cov.text(w + 0.05, b.get_y() + b.get_height() / 2, f"{int(w)}", va="center", fontweight="bold", fontsize=10)
-    
-    ax_cov.grid(axis="x", alpha=0.3)
-    plt.tight_layout()
-    st.pyplot(fig_cov)
-    plt.close(fig_cov)
-    
-    st.markdown("---")
-    st.markdown(f"### 🎯 Your Current Selection: **{selected_province}**")
-    
-    current_prov_cities = sorted(
-        CATALOG_DF[CATALOG_DF["province"] == selected_province]["city"].unique().tolist()
-    )
-    
-    if len(current_prov_cities) == 1:
-        st.warning(
-            f"⚠️ **{selected_province}** only has **1 city** in the dataset: **{current_prov_cities[0]}**. "
-            f"All forecasts for this province will be based on this single representative location."
-        )
-    else:
-        st.success(
-            f"✅ **{selected_province}** has **{len(current_prov_cities)} cities** in the dataset: "
-            f"**{', '.join(current_prov_cities)}**."
+
+elif nav_menu == "Methodology & Specs":
+    st.markdown("### System Architecture & Physical Modeling Specifications")
+
+    col_intro1, col_intro2 = st.columns([1.35, 1])
+    with col_intro1:
+        st.markdown("""
+        <div class="tech-panel">
+            <div class="tech-panel-header">01 // CHRONOLOGICAL SPLIT & LEAKAGE PREVENTION</div>
+            <h4>Strict Temporal Holdout Validation</h4>
+            <p>
+                Trained on <b>303,645 daily observations</b> (2000–2026) partitioned chronologically: 
+                <b>Training Set (2000–2021)</b>, <b>Validation Set (2022–2023)</b>, and <b>Unseen Test Set (2024–2026)</b>. 
+                Variables with direct mathematical or physical circularity—specifically <code>temperature_2m_max</code>, 
+                <code>temperature_2m_min</code>, and <code>et0_fao_evapotranspiration</code>—were excluded from the feature space 
+                to force the model to learn true radiative and advective drivers.
+            </p>
+        </div>
+        <div class="tech-panel">
+            <div class="tech-panel-header">02 // HYBRID POST-PROCESSING</div>
+            <h4>Physics-Informed Extrapolation & ENSO Perturbations</h4>
+            <p>
+                Because decision-tree ensembles cannot extrapolate linear trends beyond their training domain, 
+                the baseline CatBoost prediction is coupled with three domain-driven adjustments:
+                <br>• <b>Decadal Surface Warming (+0.03 °C/yr):</b> Aligned with BMKG 1981–2020 observational warming trends.
+                <br>• <b>ENSO Thermodynamic Forcing:</b> El Niño applies -40% precipitation, +15% shortwave radiation, and a +0.8 °C anomaly offset; La Niña applies +30% precipitation, -15% radiation, and a -0.5 °C offset.
+                <br>• <b>Harmonic Internal Variability:</b> Bounded sub-seasonal oscillation (±0.15 °C) to reflect non-stationary atmospheric variance.
+            </p>
+        </div>
+        <div class="tech-panel">
+            <div class="tech-panel-header">03 // DATA PROVENANCE</div>
+            <h4>ERA5 Reanalysis & Open-Meteo Archive</h4>
+            <p>
+                Historical meteorological records sourced from 
+                <a href="https://www.kaggle.com/datasets/danielaijdkx/indonesia-daily-weather-31-cities" target="_blank">Indonesia Daily Weather: 31 Cities since 2000</a> 
+                (Daniel Silalahi) via <a href="https://open-meteo.com" target="_blank">Open-Meteo</a> (CC BY 4.0), incorporating modified Copernicus Climate Change Service (ERA5) reanalysis data.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with col_intro2:
+        st.markdown("#### Empirical Validation Metrics")
+        m1, m2 = st.columns(2)
+        with m1:
+            st.markdown("""
+            <div class="kpi-card">
+                <div class="kpi-label">VALIDATION SET (2022–2023)</div>
+                <div class="kpi-value">0.42°C</div>
+                <span class="kpi-delta-neg">MAE • RMSE: 0.54°C (R² = 0.836)</span>
+            </div>
+            """, unsafe_allow_html=True)
+        with m2:
+            st.markdown("""
+            <div class="kpi-card">
+                <div class="kpi-label">UNSEEN TEST SET (2024–2026)</div>
+                <div class="kpi-value">0.60°C</div>
+                <span class="kpi-delta-neutral">MAE • RMSE: 0.79°C (R² = 0.679)</span>
+            </div>
+            """, unsafe_allow_html=True)
+
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown("**Production Hyperparameters (`CatBoostRegressor`)**")
+        st.code(
+            """CatBoostRegressor(
+    learning_rate=0.05,
+    depth=8,
+    iterations=500,
+    l2_leaf_reg=1,
+    random_state=42
+)""",
+            language="python"
         )
