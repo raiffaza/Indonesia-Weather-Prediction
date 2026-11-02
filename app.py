@@ -16,18 +16,29 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+plt.rcParams.update({
+    "figure.facecolor": "#FDFBF7",
+    "axes.facecolor": "#FFFFFF",
+    "text.color": "#1E293B",
+    "axes.labelcolor": "#1E293B",
+    "xtick.color": "#1E293B",
+    "ytick.color": "#1E293B",
+    "axes.edgecolor": "#E2E8F0",
+    "grid.color": "#E2E8F0"
+})
+
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-    /* Base Cream Background */
+    /* Force Light Mode & Cream Background */
     .stApp {
-        background-color: #FDFBF7; 
+        background-color: #FDFBF7 !important; 
     }
 
     html, body, [class*="css"] {
-        font-family: 'Inter', sans-serif;
-        color: #1E293B;
+        font-family: 'Inter', sans-serif !important;
+        color: #1E293B !important;
     }
 
     /* Hide Streamlit Clutter */
@@ -35,21 +46,21 @@ st.markdown("""
     footer {visibility: hidden;}
     header {visibility: hidden;}
 
-    /* Container */
+    /* Main Container */
     .block-container {
         padding-top: 2rem;
         padding-bottom: 3rem;
         max-width: 1400px;
     }
 
-    /* Sidebar */
+    /* Sidebar Styling */
     section[data-testid="stSidebar"] {
-        background-color: #FFFFFF;
+        background-color: #FFFFFF !important;
         border-right: 1px solid #E2E8F0;
     }
     
-    section[data-testid="stSidebar"] .block-container {
-        padding-top: 2rem;
+    section[data-testid="stSidebar"] * {
+        color: #1E293B !important;
     }
 
     /* Sidebar Radio as Navigation Pills */
@@ -58,36 +69,61 @@ st.markdown("""
     }
     
     div[data-testid="stRadio"] label {
-        background-color: #F8FAFC;
-        padding: 0.75rem 1rem;
-        border-radius: 12px;
-        border: 1px solid #E2E8F0;
+        background-color: #F8FAFC !important;
+        padding: 0.75rem 1rem !important;
+        border-radius: 10px !important;
+        border: 1px solid #E2E8F0 !important;
         transition: all 0.2s ease;
         cursor: pointer;
     }
     
     div[data-testid="stRadio"] label:hover {
-        background-color: #F1F5F9;
-        border-color: #CBD5E1;
+        background-color: #F1F5F9 !important;
+        border-color: #CBD5E1 !important;
     }
     
     div[data-testid="stRadio"] label[data-checked="true"] {
-        background-color: #E0F2FE;
-        border-color: #7DD3FC;
-        color: #0369A1;
-        font-weight: 600;
+        background-color: #E0F2FE !important;
+        border-color: #7DD3FC !important;
     }
 
-    /* Hero Card (Light Blue Gradient) */
+    div[data-testid="stRadio"] label[data-checked="true"] p {
+        color: #0284C7 !important;
+        font-weight: 600 !important;
+    }
+
+    /* Hide the default radio circle */
+    div[data-testid="stRadio"] label > div:first-child {
+        display: none !important;
+    }
+
+    /* Fix Selectbox Dark Mode Issue */
+    div[data-baseweb="select"] > div {
+        background-color: #FFFFFF !important;
+        border: 1px solid #E2E8F0 !important;
+        color: #1E293B !important;
+        border-radius: 8px !important;
+    }
+    div[data-baseweb="select"] svg {
+        fill: #1E293B !important;
+    }
+    ul[role="listbox"] {
+        background-color: #FFFFFF !important;
+    }
+    ul[role="listbox"] li {
+        color: #1E293B !important;
+    }
+    ul[role="listbox"] li:hover {
+        background-color: #F1F5F9 !important;
+    }
+
+    /* Hero Card (Light Blue) */
     .hero-card {
         background: linear-gradient(135deg, #E0F2FE 0%, #F0F9FF 100%);
-        color: #0F172A;
-        padding: 3rem 2.5rem;
-        border-radius: 24px;
+        padding: 2.5rem;
+        border-radius: 20px;
         box-shadow: 0 10px 30px -10px rgba(14, 165, 233, 0.15);
         margin-bottom: 2rem;
-        position: relative;
-        overflow: hidden;
         border: 1px solid #BAE6FD;
     }
     
@@ -107,30 +143,29 @@ st.markdown("""
     }
 
     .hero-title {
-        font-size: 2.5rem;
+        font-size: 2.2rem;
         font-weight: 800;
         margin: 0 0 1rem 0;
         line-height: 1.2;
-        color: #0F172A;
+        color: #0F172A !important;
         letter-spacing: -0.02em;
     }
 
     .hero-subtitle {
-        font-size: 1.1rem;
-        color: #334155;
+        font-size: 1rem;
+        color: #334155 !important;
         margin: 0;
         line-height: 1.6;
         max-width: 800px;
-        font-weight: 400;
     }
 
     /* KPI Cards */
     .kpi-card {
         background: #FFFFFF;
-        border-radius: 16px;
+        border-radius: 14px;
         padding: 1.5rem;
         border: 1px solid #E2E8F0;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03), 0 2px 4px -2px rgba(0, 0, 0, 0.03);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03);
         transition: all 0.3s ease;
         height: 100%;
     }
@@ -144,16 +179,16 @@ st.markdown("""
     .kpi-label {
         font-size: 0.75rem;
         font-weight: 700;
-        color: #64748B;
+        color: #64748B !important;
         text-transform: uppercase;
         letter-spacing: 0.05em;
         margin-bottom: 0.5rem;
     }
 
     .kpi-value {
-        font-size: 2rem;
+        font-size: 1.8rem;
         font-weight: 800;
-        color: #0F172A;
+        color: #0F172A !important;
         margin-bottom: 0.5rem;
         letter-spacing: -0.02em;
     }
@@ -161,30 +196,30 @@ st.markdown("""
     .kpi-delta-pos {
         font-size: 0.8rem;
         font-weight: 600;
-        color: #DC2626;
+        color: #DC2626 !important;
         background: #FEF2F2;
         padding: 0.25rem 0.6rem;
-        border-radius: 8px;
+        border-radius: 6px;
         display: inline-block;
     }
 
     .kpi-delta-neg {
         font-size: 0.8rem;
         font-weight: 600;
-        color: #0284C7;
+        color: #0284C7 !important;
         background: #F0F9FF;
         padding: 0.25rem 0.6rem;
-        border-radius: 8px;
+        border-radius: 6px;
         display: inline-block;
     }
 
     .kpi-delta-neutral {
         font-size: 0.8rem;
         font-weight: 600;
-        color: #475569;
+        color: #475569 !important;
         background: #F8FAFC;
         padding: 0.25rem 0.6rem;
-        border-radius: 8px;
+        border-radius: 6px;
         display: inline-block;
         border: 1px solid #E2E8F0;
     }
@@ -193,7 +228,7 @@ st.markdown("""
     .section-card {
         background: #FFFFFF;
         border: 1px solid #E2E8F0;
-        border-radius: 16px;
+        border-radius: 14px;
         padding: 1.5rem;
         margin-bottom: 1.5rem;
         box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.02);
@@ -202,48 +237,16 @@ st.markdown("""
 
     .section-card h4 {
         margin: 0 0 0.75rem 0;
-        color: #0F172A;
+        color: #0F172A !important;
         font-size: 1.1rem;
         font-weight: 700;
     }
 
     .section-card p {
         margin: 0;
-        color: #475569;
+        color: #475569 !important;
         font-size: 0.95rem;
         line-height: 1.6;
-    }
-
-    /* Buttons */
-    div.stButton > button:first-child {
-        background: #0EA5E9;
-        color: white;
-        border-radius: 8px;
-        border: none;
-        padding: 0.5rem 1.5rem;
-        font-weight: 600;
-        transition: all 0.2s ease;
-        box-shadow: 0 4px 6px -1px rgba(14, 165, 233, 0.2);
-    }
-
-    div.stButton > button:first-child:hover {
-        background: #0284C7;
-        transform: translateY(-1px);
-        box-shadow: 0 6px 8px -1px rgba(14, 165, 233, 0.3);
-        color: white;
-    }
-
-    /* Expander */
-    div[data-testid="stExpander"] {
-        border: 1px solid #E2E8F0;
-        border-radius: 12px;
-        box-shadow: none;
-        background-color: #FFFFFF;
-    }
-    
-    div[data-testid="stExpander"] summary {
-        font-weight: 600;
-        color: #0F172A;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -700,22 +703,22 @@ def render_signature_linechart(
     return fig, plot_data, summary_info
 
 with st.sidebar:
-    st.markdown("## 🧭 Control Panel")
+    st.markdown("## Control Panel")
     st.caption("Configure region and forecast time range.")
 
     nav_menu = st.radio(
-        "Select Navigation Page:",
+        "Navigation",
         options=[
-            "🏠 Introduction & System Architecture",
-            "📈 Forecast Dashboard & Visualization",
-            "🔍 Rankings & Data Exploration",
-            "📍 Coverage & Available Cities"
+            "Overview",
+            "Forecast Dashboard",
+            "Data Rankings",
+            "Coverage"
         ],
         index=1
     )
 
     st.markdown("---")
-    st.markdown("### 📍 1. Select Location")
+    st.markdown("### 1. Select Location")
     st.caption("Select a **Province** first to filter the **City** options.")
 
     selected_province = st.selectbox(
@@ -752,7 +755,7 @@ with st.sidebar:
     )
 
     st.markdown("---")
-    st.markdown("### 🌡️ 2. Climate Scenario")
+    st.markdown("### 2. Climate Scenario")
     scenario_mode = st.selectbox(
         "Select Climate Scenario:",
         options=[
@@ -765,7 +768,7 @@ with st.sidebar:
     )
 
     st.markdown("---")
-    st.markdown("### ⏱️ 3. Forecast Mode")
+    st.markdown("### 3. Forecast Mode")
     prediction_mode = st.selectbox(
         "Select Time Scale:",
         options=[
@@ -777,7 +780,7 @@ with st.sidebar:
     )
 
     st.markdown("---")
-    st.markdown("### 🎨 4. Chart Options")
+    st.markdown("### 4. Chart Options")
     grouping_mode = st.selectbox(
         "Entity Basis in Line Chart:",
         options=[
@@ -798,7 +801,7 @@ with st.sidebar:
 
 st.markdown("""
 <div class="hero-card">
-    <div class="hero-badge">Climatological Intelligence • CatBoost ML</div>
+    <div class="hero-badge">CLIMATOLOGICAL INTELLIGENCE • CATBOOST ML</div>
     <h1 class="hero-title">Indonesia Average Temperature Profile & Forecast System</h1>
     <p class="hero-subtitle">
         Interactive meteorological analytics platform powered by <b>Machine Learning (Tuned CatBoost Regressor)</b> 
@@ -808,7 +811,7 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-if nav_menu == "🏠 Introduction & System Architecture":
+if nav_menu == "Overview":
     st.subheader("📘 Introduction to the Average Temperature Forecast System (Climate Analytics)")
 
     col_intro1, col_intro2 = st.columns([1.35, 1])
@@ -923,7 +926,7 @@ if nav_menu == "🏠 Introduction & System Architecture":
         *This hybrid approach is a standard practice in Climate Informatics (similar to Bias Correction and Scenario Downscaling in IPCC reports), ensuring both data-driven accuracy and physical climate realism.*
         """)
 
-elif nav_menu == "📈 Forecast Dashboard & Visualization":
+elif nav_menu == "Forecast Dashboard":
     
     st.markdown("""
     <div class="section-card" style="border-left-color: #F59E0B; background-color: #FFFBEB;">
@@ -1335,7 +1338,7 @@ elif nav_menu == "📈 Forecast Dashboard & Visualization":
                 mime="text/csv"
             )
 
-elif nav_menu == "🔍 Rankings & Data Exploration":
+elif nav_menu == "Data Rankings":
     st.subheader("🏆 Complete Temperature Rankings of Cities & Provinces in Indonesia")
     st.write(
         "This page displays the full ranking table of all 31 Cities (29 Provinces) along with their status "
@@ -1413,7 +1416,7 @@ elif nav_menu == "🔍 Rankings & Data Exploration":
         height=600
     )
 
-elif nav_menu == "📍 Coverage & Available Cities":
+elif nav_menu == "Coverage":
     st.subheader("📍 Dataset Coverage: Available Cities per Province")
     
     st.info(
