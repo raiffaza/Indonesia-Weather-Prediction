@@ -10,7 +10,7 @@ import streamlit as st
 from catboost import CatBoostRegressor
 from PIL import Image
 
-# --- LOGIC ICON FRIEREN (Buat tab browser) ---
+# Browser tab icon logic
 try:
     icon_img = Image.open("frieren icon.jfif") 
 except Exception:
@@ -22,6 +22,10 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+# Sidebar toggle state initialization
+if "sidebar_open" not in st.session_state:
+    st.session_state.sidebar_open = True
 
 # Bespoke Meteorological Chart Styling (Warm Cream & Sky Blue Theme)
 plt.rcParams.update({
@@ -38,7 +42,8 @@ plt.rcParams.update({
     "axes.spines.right": False
 })
 
-st.markdown("""
+# Dynamic CSS based on sidebar state
+css_base = """
 <style>
     @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
@@ -56,45 +61,40 @@ st.markdown("""
         font-family: 'JetBrains Mono', monospace !important;
     }
 
-    /* Hide Default Streamlit Chrome */
+    /* Hide Default Streamlit Chrome elements */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
-    header[data-testid="stHeader"] {visibility: hidden;}
+    header[data-testid="stHeader"] { background-color: transparent !important; }
+    [data-testid="stToolbar"] { visibility: hidden !important; }
+    
+    /* Hide native sidebar toggles to prevent conflicts with custom buttons */
+    [data-testid="stSidebarCollapseButton"] { display: none !important; }
+    [data-testid="stSidebarCollapsedControl"] { display: none !important; }
 
-    /* --- CSS SAKTI: PAKSA SIDEBAR TERBUKA & HILANGKAN SEMUA TOMBOL TUTUP --- */
-    
-    /* 1. Sembunyikan tombol tutup di dalam sidebar */
-    [data-testid="stSidebarCollapseButton"] {
-        display: none !important;
+    /* Custom Sidebar Button Styling */
+    div[data-testid="stButton"] > button {
+        background-color: #EFECE1 !important;
+        color: #182633 !important;
+        border: 1px solid #D5D0C1 !important;
+        border-radius: 4px !important;
+        font-family: 'JetBrains Mono', monospace !important;
+        font-weight: 600 !important;
+        font-size: 0.8rem !important;
+        transition: all 0.2s ease;
+        margin-bottom: 1rem;
     }
-    
-    /* 2. Sembunyikan tombol buka melayang (kalau-kalau nyangkut) */
-    [data-testid="stSidebarCollapsedControl"] {
-        display: none !important;
-    }
-    
-    /* 3. Paksa sidebar selalu nampil dan tidak bisa digeser */
-    section[data-testid="stSidebar"] {
-        display: block !important;
-        visibility: visible !important;
-        transform: translateX(0px) !important;
-        min-width: 300px !important;
-        width: 300px !important;
-        margin-left: 0px !important;
-    }
-    
-    /* 4. Paksa konten utama geser ke kanan biar nggak ketutupan */
-    section[data-testid="stMain"] {
-        margin-left: 300px !important;
+    div[data-testid="stButton"] > button:hover {
+        background-color: #E5E1D4 !important;
+        border-color: #B3D1E7 !important;
+        color: #0F4469 !important;
     }
 
     .block-container {
         padding-top: 1.75rem;
         padding-bottom: 3rem;
-        max-width: 1420px;
     }
 
-    /* Sidebar: Warm Parchment Cream with Crisp Hairline */
+    /* Sidebar: Warm Parchment Cream */
     section[data-testid="stSidebar"] {
         background-color: #EFECE1 !important;
         border-right: 1px solid #D5D0C1 !important;
@@ -104,7 +104,6 @@ st.markdown("""
         color: #182633 !important;
     }
 
-    /* Sidebar Section Headers */
     .sidebar-section-title {
         font-family: 'JetBrains Mono', monospace !important;
         font-size: 0.7rem;
@@ -118,11 +117,8 @@ st.markdown("""
         border-bottom: 1px solid #D5D0C1;
     }
 
-    /* Sidebar Navigation Radio -> Clean Tabular List (No AI Pill Slop) */
-    div[data-testid="stRadio"] > div {
-        gap: 0.25rem;
-    }
-
+    /* Sidebar Navigation Radio */
+    div[data-testid="stRadio"] > div { gap: 0.25rem; }
     div[data-testid="stRadio"] label {
         background-color: transparent !important;
         padding: 0.55rem 0.75rem !important;
@@ -131,32 +127,20 @@ st.markdown("""
         transition: background-color 0.15s ease;
         cursor: pointer;
     }
-
-    div[data-testid="stRadio"] label:hover {
-        background-color: #E5E1D4 !important;
-    }
-
+    div[data-testid="stRadio"] label:hover { background-color: #E5E1D4 !important; }
     div[data-testid="stRadio"] label[data-checked="true"] {
         background-color: #DFEEF8 !important;
         border: 1px solid #9BC2DF !important;
     }
-
     div[data-testid="stRadio"] label[data-checked="true"] p {
         color: #0F4469 !important;
         font-weight: 700 !important;
     }
+    div[data-testid="stRadio"] label > div:first-child { display: none !important; }
 
-    div[data-testid="stRadio"] label > div:first-child {
-        display: none !important;
-    }
-
-    /* Inputs & Dropdowns: Crisp Cream Paper & Sky Blue Focus */
-    div[data-baseweb="select"] * {
-        color: #182633 !important;
-    }
-    .st-emotion-cache-1wmy9hl, .st-emotion-cache-1wmy9hl p {
-        color: #182633 !important;
-    }
+    /* Inputs & Dropdowns */
+    div[data-baseweb="select"] * { color: #182633 !important; }
+    .st-emotion-cache-1wmy9hl, .st-emotion-cache-1wmy9hl p { color: #182633 !important; }
     div[data-baseweb="select"] > div,
     div[data-baseweb="input"] > div,
     div[data-testid="stDateInput"] > div > div {
@@ -166,25 +150,15 @@ st.markdown("""
         border-radius: 4px !important;
         box-shadow: none !important;
     }
-
-    div[data-baseweb="select"] svg {
-        fill: #3A4D5E !important;
-    }
-
+    div[data-baseweb="select"] svg { fill: #3A4D5E !important; }
     ul[role="listbox"] {
         background-color: #FCFBF7 !important;
         border: 1px solid #C9C3B2 !important;
     }
+    ul[role="listbox"] li { color: #182633 !important; }
+    ul[role="listbox"] li:hover { background-color: #E4F0F8 !important; }
 
-    ul[role="listbox"] li {
-        color: #182633 !important;
-    }
-
-    ul[role="listbox"] li:hover {
-        background-color: #E4F0F8 !important;
-    }
-
-    /* Editorial Masthead Header (Replaces AI Gradient Hero Card) */
+    /* Masthead Header */
     .masthead {
         background-color: #E4F0F8;
         border: 1px solid #B3D1E7;
@@ -196,7 +170,6 @@ st.markdown("""
         flex-direction: column;
         gap: 0.5rem;
     }
-
     .masthead-top {
         display: flex;
         justify-content: space-between;
@@ -205,7 +178,6 @@ st.markdown("""
         padding-bottom: 0.5rem;
         margin-bottom: 0.25rem;
     }
-
     .masthead-code {
         font-family: 'JetBrains Mono', monospace;
         font-size: 0.72rem;
@@ -214,7 +186,6 @@ st.markdown("""
         letter-spacing: 0.06em;
         text-transform: uppercase;
     }
-
     .masthead-title {
         font-size: 1.75rem;
         font-weight: 800;
@@ -223,7 +194,6 @@ st.markdown("""
         letter-spacing: -0.025em;
         line-height: 1.2;
     }
-
     .masthead-desc {
         font-size: 0.92rem;
         color: #2C465B !important;
@@ -232,7 +202,7 @@ st.markdown("""
         max-width: 960px;
     }
 
-    /* Telemetry Readout Strip (KPIs without Bouncy Hover or Drop Shadows) */
+    /* KPI Cards */
     .kpi-card {
         background: #FCFBF7;
         border: 1px solid #D5D0C1;
@@ -241,7 +211,6 @@ st.markdown("""
         padding: 1.1rem 1.25rem;
         height: 100%;
     }
-
     .kpi-label {
         font-family: 'JetBrains Mono', monospace;
         font-size: 0.7rem;
@@ -251,7 +220,6 @@ st.markdown("""
         letter-spacing: 0.05em;
         margin-bottom: 0.4rem;
     }
-
     .kpi-value {
         font-family: 'JetBrains Mono', monospace;
         font-size: 1.65rem;
@@ -260,7 +228,6 @@ st.markdown("""
         margin-bottom: 0.4rem;
         letter-spacing: -0.03em;
     }
-
     .kpi-delta-pos {
         font-family: 'JetBrains Mono', monospace;
         font-size: 0.73rem;
@@ -272,7 +239,6 @@ st.markdown("""
         border-radius: 3px;
         display: inline-block;
     }
-
     .kpi-delta-neg {
         font-family: 'JetBrains Mono', monospace;
         font-size: 0.73rem;
@@ -284,7 +250,6 @@ st.markdown("""
         border-radius: 3px;
         display: inline-block;
     }
-
     .kpi-delta-neutral {
         font-family: 'JetBrains Mono', monospace;
         font-size: 0.73rem;
@@ -297,7 +262,7 @@ st.markdown("""
         display: inline-block;
     }
 
-    /* Technical Panels (Replaces Left-Border AI Callouts) */
+    /* Tech Panels */
     .tech-panel {
         background: #FCFBF7;
         border: 1px solid #D5D0C1;
@@ -305,7 +270,6 @@ st.markdown("""
         padding: 1.25rem 1.4rem;
         margin-bottom: 1.2rem;
     }
-
     .tech-panel-sky {
         background: #EBF4FA;
         border: 1px solid #B8D4E8;
@@ -313,7 +277,6 @@ st.markdown("""
         padding: 1.1rem 1.35rem;
         margin-bottom: 1.25rem;
     }
-
     .tech-panel-header {
         font-family: 'JetBrains Mono', monospace;
         font-size: 0.72rem;
@@ -323,22 +286,18 @@ st.markdown("""
         color: #1E5D88 !important;
         margin-bottom: 0.4rem;
     }
-
     .tech-panel h4 {
         margin: 0 0 0.5rem 0;
         color: #0F293D !important;
         font-size: 1rem;
         font-weight: 700;
     }
-
     .tech-panel p, .tech-panel-sky p {
         margin: 0;
         color: #2F4252 !important;
         font-size: 0.9rem;
         line-height: 1.6;
     }
-
-    /* Station Readout Box in Sidebar */
     .station-box {
         background-color: #FCFBF7;
         border: 1px solid #C9C3B2;
@@ -349,14 +308,43 @@ st.markdown("""
         line-height: 1.6;
         margin-top: 0.5rem;
     }
-
-    /* Subheaders */
     h2, h3, h4 {
         letter-spacing: -0.015em;
         color: #0F293D !important;
     }
+"""
+
+css_open = """
+    /* Sidebar open state */
+    section[data-testid="stMain"] {
+        margin-left: 21rem !important; 
+    }
 </style>
-""", unsafe_allow_html=True)
+"""
+
+css_closed = """
+    /* Sidebar closed state */
+    section[data-testid="stSidebar"] { 
+        display: none !important; 
+    }
+    section[data-testid="stMain"] {
+        margin-left: 0px !important;
+        padding-left: 0px !important;
+        width: 100% !important;
+    }
+    .block-container {
+        max-width: 100% !important;
+        padding-left: 2rem !important;
+        padding-right: 2rem !important;
+    }
+</style>
+"""
+
+if st.session_state.sidebar_open:
+    st.markdown(css_base + css_open, unsafe_allow_html=True)
+else:
+    st.markdown(css_base + css_closed, unsafe_allow_html=True)
+
 
 LOCATION_CATALOG = [
     {"city": "Banda Aceh", "province": "Aceh", "island": "Sumatra", "base_temp": 27.1, "rad": 19.2, "precip": 5.4, "phours": 6.5, "ws": 12.5, "wg": 28.0, "wcode": 51.0},
@@ -628,7 +616,6 @@ def render_signature_linechart(
     median_entity = entity_means.index[len(entity_means) // 2]
 
     base_selected = top_2 + bottom_2 + [median_entity]
-    # Refined Meteorological Palette (Warm Terracotta/Amber for Heat, Cerulean/Sky for Cold, Slate for Median)
     base_colors = ["#B8332A", "#D97724", "#165682", "#5DA2D5", "#7C8B99"]
     entity_colors = dict(zip(base_selected, base_colors))
 
@@ -811,10 +798,20 @@ def render_signature_linechart(
 
     return fig, plot_data, summary_info
 
+# Button to open sidebar (shows in main area if closed)
+if not st.session_state.sidebar_open:
+    if st.button("☰ Open Sidebar Menu", use_container_width=False):
+        st.session_state.sidebar_open = True
+        st.rerun()
+
 with st.sidebar:
-    # --- LOGO FRIEREN DI SINI ---
+    # Button to close sidebar (shows inside sidebar)
+    if st.button("✖ Close Sidebar Menu", use_container_width=True):
+        st.session_state.sidebar_open = False
+        st.rerun()
+
+    # Logo image
     try:
-        # Pakai nama file persis seperti yang lu punya
         st.image("frieren logo.jfif", use_container_width=True)
     except Exception:
         st.markdown("<h2 style='text-align: center; color: #1E5D88;'>IDN WEATHER</h2>", unsafe_allow_html=True)
@@ -902,7 +899,7 @@ with st.sidebar:
     st.caption(f"Engine: `{model_status_text}`")
     st.caption("Dataset: [Indonesia Daily Weather](https://www.kaggle.com/datasets/danielaijdkx/indonesia-daily-weather-31-cities) · [Open-Meteo ERA5](https://open-meteo.com) (CC BY 4.0)")
 
-# Editorial Masthead (Clean, Non-AI Header)
+# Editorial Masthead
 st.markdown(f"""
 <div class="masthead">
     <div class="masthead-top">
