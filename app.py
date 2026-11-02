@@ -9,8 +9,6 @@ import seaborn as sns
 import streamlit as st
 from catboost import CatBoostRegressor
 from PIL import Image
-
-# --- LOGIC ICON FRIEREN (Buat tab browser) ---
 try:
     icon_img = Image.open("frieren icon.jfif") 
 except Exception:
@@ -59,7 +57,31 @@ st.markdown("""
     /* Hide Default Streamlit Chrome */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
-    header[data-testid="stHeader"] {visibility: hidden;}
+    
+    /* Jangan hide header secara total, buat transparan saja */
+    header[data-testid="stHeader"] {
+        background-color: transparent !important;
+    }
+    
+    /* Hanya sembunyikan toolbar kanan (deploy, menu, dll) */
+    [data-testid="stToolbar"] {
+        visibility: hidden !important;
+    }
+
+    /* Pastikan tombol buka sidebar (>>) tetap muncul dan bisa diklik */
+    [data-testid="stSidebarCollapsedControl"] {
+        visibility: visible !important;
+        display: block !important;
+        z-index: 999999 !important;
+        color: #182633 !important;
+    }
+    
+    /* Styling tombol buka sidebar agar sesuai tema cream */
+    [data-testid="stSidebarCollapsedControl"] button {
+        background-color: #EFECE1 !important;
+        border: 1px solid #D5D0C1 !important;
+        border-radius: 4px !important;
+    }
 
     .block-container {
         padding-top: 1.75rem;
