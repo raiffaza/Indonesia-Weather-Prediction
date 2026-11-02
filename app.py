@@ -10,7 +10,7 @@ import streamlit as st
 from catboost import CatBoostRegressor
 
 st.set_page_config(
-    page_title="BMKG Climate AI — Indonesia Temperature Forecasting",
+    page_title="Indonesia Climate AI — Temperature Forecasting",
     page_icon="🌤️",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -223,7 +223,9 @@ def load_historical_proxy():
     csv_candidates = [
         os.path.join(BASE_DIR, "idn_weather_daily.csv.gz"),
         os.path.join(BASE_DIR, "idn_weather_daily.csv"),
+        "idn_weather_daily.csv.gz",
         "idn_weather_daily.csv",
+        r"G:\Data Analyst\Indonesia Weather\idn_weather_daily.csv.gz",
         r"G:\Data Analyst\Indonesia Weather\idn_weather_daily.csv"
     ]
     proxy_cols = [
@@ -676,10 +678,14 @@ with st.sidebar:
 
     st.markdown("---")
     st.caption(f"⚙️ Engine Status: {model_status_text}")
+    
+    st.markdown("---")
+    st.caption("📊 **Data Source:**")
+    st.caption("[Indonesia Daily Weather (Kaggle)](https://www.kaggle.com/datasets/danielaijdkx/indonesia-daily-weather-31-cities) • Powered by [Open-Meteo](https://open-meteo.com) (CC BY 4.0)")
 
 st.markdown("""
 <div class="hero-card">
-    <div class="hero-badge">BMKG Climatological Intelligence • CatBoost Champion Model</div>
+    <div class="hero-badge">Climatological Intelligence • CatBoost ML</div>
     <h1 class="hero-title">Indonesia Average Temperature Profile & Forecast System</h1>
     <p class="hero-subtitle">
         Interactive meteorological analytics platform powered by <b>Machine Learning (Tuned CatBoost Regressor)</b> 
@@ -690,7 +696,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 if nav_menu == "🏠 Introduction & System Architecture":
-    st.subheader("📘 Introduction to the Average Temperature Forecast System (BMKG Analytics)")
+    st.subheader("📘 Introduction to the Average Temperature Forecast System (Climate Analytics)")
 
     col_intro1, col_intro2 = st.columns([1.35, 1])
     with col_intro1:
@@ -715,6 +721,17 @@ if nav_menu == "🏠 Introduction & System Architecture":
                 from the input features to prevent <i>Target Leakage</i>, ensuring the model truly learns 
                 atmospheric physical drivers such as solar radiation (<code>shortwave_radiation_sum</code>), precipitation, 
                 wind speed, spatial location, and time cycles.
+            </p>
+        </div>
+        <div class="section-card">
+            <h4>📊 Data Source & Attribution</h4>
+            <p>
+                The historical weather dataset (2000–2026) used to train this model was sourced from 
+                <a href="https://www.kaggle.com/datasets/danielaijdkx/indonesia-daily-weather-31-cities" target="_blank"><b>Indonesia Daily Weather: 31 Cities since 2000</b></a> 
+                by Daniel Silalahi. The underlying data is provided by 
+                <a href="https://open-meteo.com" target="_blank"><b>Open-Meteo</b></a> under the 
+                <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">CC BY 4.0</a> license, 
+                and contains modified Copernicus Climate Change Service (ERA5 reanalysis) information.
             </p>
         </div>
         """, unsafe_allow_html=True)
