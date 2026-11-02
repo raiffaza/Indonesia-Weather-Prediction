@@ -766,7 +766,7 @@ def render_signature_linechart(
     )
     leg.get_title().set_fontweight("bold")
     ax.grid(alpha=0.45, linestyle="--", linewidth=0.7)
-    plt.tight_layout()
+    fig.subplots_adjust(left=0.08, right=0.78, top=0.90, bottom=0.15)
 
     user_rank = int(entity_means.index.get_loc(user_target)) + 1 if user_target in entity_means.index else None
     user_avg = float(entity_means[user_target]) if user_target in entity_means.index else None
