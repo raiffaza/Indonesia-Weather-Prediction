@@ -9,6 +9,7 @@ import seaborn as sns
 import streamlit as st
 from catboost import CatBoostRegressor
 from PIL import Image
+
 try:
     icon_img = Image.open("frieren icon.jfif") 
 except Exception:
@@ -21,7 +22,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Bespoke Meteorological Chart Styling (Warm Cream & Sky Blue Theme)
 plt.rcParams.update({
     "figure.facecolor": "#FCFBF7",
     "axes.facecolor": "#FCFBF7",
@@ -58,29 +58,32 @@ st.markdown("""
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     
-    /* Jangan hide header secara total, buat transparan saja */
+    /* Hanya sembunyikan header utama Streamlit (tempat menu deploy) */
+    /* Kalender aman karena kita spesifik pakai data-testid */
     header[data-testid="stHeader"] {
-        background-color: transparent !important;
+        visibility: hidden;
     }
     
-    /* Hanya sembunyikan toolbar kanan (deploy, menu, dll) */
-    [data-testid="stToolbar"] {
-        visibility: hidden !important;
-    }
-
-    /* Pastikan tombol buka sidebar (>>) tetap muncul dan bisa diklik */
-    [data-testid="stSidebarCollapsedControl"] {
+    /* Paksa tombol buka-tutup sidebar tetap muncul dan bisa diklik */
+    [data-testid="stSidebarCollapsedControl"],
+    [data-testid="stSidebarCollapsedControl"] * {
         visibility: visible !important;
-        display: block !important;
+        display: flex !important;
         z-index: 999999 !important;
-        color: #182633 !important;
     }
     
-    /* Styling tombol buka sidebar agar sesuai tema cream */
-    [data-testid="stSidebarCollapsedControl"] button {
+    /* Styling tombol sidebar agar sesuai tema cream */
+    [data-testid="stSidebarCollapsedControl"] button,
+    button[data-testid="stSidebarCollapsedControl"] {
         background-color: #EFECE1 !important;
         border: 1px solid #D5D0C1 !important;
         border-radius: 4px !important;
+    }
+    
+    /* Pastikan ikon panahnya berwarna gelap */
+    [data-testid="stSidebarCollapsedControl"] svg {
+        fill: #182633 !important;
+        color: #182633 !important;
     }
 
     .block-container {
