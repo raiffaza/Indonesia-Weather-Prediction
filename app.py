@@ -89,9 +89,13 @@ css_base = """
         color: #0F4469 !important;
     }
 
+    /* Constrain max width so it doesn't stretch to infinity on wide screens */
     .block-container {
         padding-top: 1.75rem;
         padding-bottom: 3rem;
+        max-width: 1400px !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
     }
 
     /* Sidebar: Warm Parchment Cream */
@@ -312,9 +316,11 @@ css_base = """
         letter-spacing: -0.015em;
         color: #0F293D !important;
     }
+</style>
 """
 
 css_open = """
+<style>
     /* Sidebar open state */
     section[data-testid="stMain"] {
         margin-left: 21rem !important; 
@@ -323,6 +329,7 @@ css_open = """
 """
 
 css_closed = """
+<style>
     /* Sidebar closed state */
     section[data-testid="stSidebar"] { 
         display: none !important; 
@@ -330,12 +337,6 @@ css_closed = """
     section[data-testid="stMain"] {
         margin-left: 0px !important;
         padding-left: 0px !important;
-        width: 100% !important;
-    }
-    .block-container {
-        max-width: 100% !important;
-        padding-left: 2rem !important;
-        padding-right: 2rem !important;
     }
 </style>
 """
@@ -344,7 +345,6 @@ if st.session_state.sidebar_open:
     st.markdown(css_base + css_open, unsafe_allow_html=True)
 else:
     st.markdown(css_base + css_closed, unsafe_allow_html=True)
-
 
 LOCATION_CATALOG = [
     {"city": "Banda Aceh", "province": "Aceh", "island": "Sumatra", "base_temp": 27.1, "rad": 19.2, "precip": 5.4, "phours": 6.5, "ws": 12.5, "wg": 28.0, "wcode": 51.0},
@@ -1101,7 +1101,7 @@ if nav_menu == "Forecast Workbench":
         ax_bar.legend(loc="lower right", frameon=True, facecolor="#F7F4EB", edgecolor="#D5D0C1")
         ax_bar.grid(axis="x", alpha=0.45, linestyle="--")
         plt.tight_layout()
-        st.pyplot(fig_bar)
+        st.pyplot(fig_bar, use_container_width=True)
         plt.close(fig_bar)
 
     elif prediction_mode.startswith("2."):
@@ -1183,7 +1183,7 @@ if nav_menu == "Forecast Workbench":
             """, unsafe_allow_html=True)
 
         st.markdown("<br>", unsafe_allow_html=True)
-        st.pyplot(fig_w)
+        st.pyplot(fig_w, use_container_width=True)
         plt.close(fig_w)
 
         with st.expander("View Numerical 7-Day Matrix"):
@@ -1296,7 +1296,7 @@ if nav_menu == "Forecast Workbench":
             """, unsafe_allow_html=True)
 
         st.markdown("<br>", unsafe_allow_html=True)
-        st.pyplot(fig_mm)
+        st.pyplot(fig_mm, use_container_width=True)
         plt.close(fig_mm)
 
         with st.expander("Export Seasonal Forecast Matrix (CSV)"):
