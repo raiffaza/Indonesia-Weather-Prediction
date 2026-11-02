@@ -832,7 +832,7 @@ with st.sidebar:
         <div class="station-box">
             <b>STATION:</b> {selected_city.upper()}<br>
             <b>PROVINCE:</b> {selected_province}<br>
-            <b>REGION:</b> {selected_island} ({len(filtered_cities)} stn)
+            <b>REGION:</b> {selected_island} ({len(filtered_cities)} station)
         </div>
         """,
         unsafe_allow_html=True
